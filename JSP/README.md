@@ -58,7 +58,7 @@
 ### taglib Directive
 * JSTL 또는 사용자에 의해서 만든 custom tag 를 이용할 때 사용
 ```jsp
-* **<%@ taglib prefix="c" uri="https://" %>**
+<%@ taglib prefix="c" uri="https://" %>
 ```
 
 ## 기본 객체
