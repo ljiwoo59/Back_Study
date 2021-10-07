@@ -99,8 +99,9 @@
 * **servlet** 과 **jsp** 페이지 간에 특정 정보를 주고 받거나 공유 하기 위한 메소드 지원
 
 |method|설명|
+|------|----|
 |**void setAttribute(String name, Object value)**|문자열 name 이름으로 Object형 데이터 저장|
-|**Object getAttribute(String name)**|문자열 name 에 해당하는 속성 값이 있다면 Object 형태로 가져오고 없으면 null 리턴|
+|**Object getAttribute(String name)**|문자열 name 에 해당하는 값을 Object 형태 또는 null 리턴|
 |**Enumeration getAttributeNames()**|현재 객체에 저장된 속성들의 이름들을 Enumeration 형태로 가져온다|
 |**void removeAttribute(String name)**|문자열 name 에 해당하는 속성을 삭제|
 
