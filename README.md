@@ -14,3 +14,9 @@
 * Process
 * Life-Cycle
   * 주요 메소드
+
+## [JSP](https://github.com/ljiwoo59/Back_Study/tree/main/JSP)
+* Scripting Element
+* Directive
+* 기본 객체
+* Web page 이동
