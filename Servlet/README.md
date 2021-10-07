@@ -43,3 +43,7 @@
 1. *Client* 로부터 id, subject, content 를 받아온다
 2. **DB insert Logic**
 3. 성공할 시 성공 페이지, 아닐 시 실패 페이지 응답
+
+## [방명록 목록](https://github.com/ljiwoo59/Back_Study/blob/main/Servlet/GuestBookList.java)
+1. *DB* 로부터 데이터 받아오기
+2. 받아온 정보 행마다 테이블 응답
