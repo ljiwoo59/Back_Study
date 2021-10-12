@@ -130,5 +130,5 @@ response.sendRedirect(location);
 
 ---
 # Example
-## [방명록 작성](https://github.com/ljiwoo59/Back_Study/blob/main/JSP/articlewrite.jsp)
-## [방명록 목록](https://github.com/ljiwoo59/Back_Study/blob/main/JSP/list.jsp)
+## [방명록 작성](https://github.com/ljiwoo59/Back_Study/blob/main/JSP/guestbook2_jsp/WebContent/guestbook/articlewrite.jsp)
+## [방명록 목록](https://github.com/ljiwoo59/Back_Study/blob/main/JSP/guestbook2_jsp/WebContent/guestbook/list.jsp)
