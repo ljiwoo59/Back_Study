@@ -19,7 +19,7 @@ import com.ssafy.util.DBUtil;
 public class GuestBookWrite extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
-	private DBUtil util = DBUtil.getInstance();
+	private final DBUtil util = DBUtil.getInstance();
 	
 	// service method: 클라이언트로부터 요청이 들어오면 응답을 만들어 내는 메소드
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -65,7 +65,7 @@ public class GuestBookWrite extends HttpServlet {
 		out.println("    <script type=\"text/javascript\">");
 		out.println("        $(document).ready(function () {");
 		out.println("            $(\"#mvListBtn\").click(function () {");
-		out.println("                location.href = \"/guestbook1_servlet/listarticle\";");
+		out.println("                location.href = \"/guestbook1_servlet/articlelist\";");
 		out.println("            });");
 		out.println("            $(\"#mvRegisterBtn\").click(function () {");
 		out.println("                location.href = \"/guestbook1_servlet/guestbook/write.html\";");
