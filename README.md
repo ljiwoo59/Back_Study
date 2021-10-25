@@ -25,4 +25,8 @@
 * 기본 객체
 * Web page 이동
 
+## [EL](https://github.com/ljiwoo59/Back_Study/tree/main/EL)
+* 문법
+* 내장 객체
+
 ## [Cookie & Session](https://github.com/ljiwoo59/Back_Study/tree/main/Session_Cookie)
