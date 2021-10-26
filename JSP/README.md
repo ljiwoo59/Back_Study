@@ -5,6 +5,16 @@
   * 최초 jsp 요청 시
   * jsp file 변경 시 
 
+## Action Element
+* JSP tag
+  * jsp:useBean
+  * jsp:setProperty
+  * jsp:getProperty
+  * jsp:param
+  * jsp:plugin
+  * jsp:forward
+  * jsp:include
+
 ## Scripting Element
 ### 선언
 * 멤버변수 선언이나 메소드를 선언 하는 영역 (전역)
@@ -25,9 +35,12 @@
 ### 주석
 ```jsp
 <%-- 주석 --%>
+
+### 식언어 (Expression Language)
+
 ```
 
-## JSP 지시자 (Directive)
+## Directive Element
 ### page Directive
 * 컨테이너에게 현재 JSP 페이지를 어떻게 처리할 것인가에 대한 정보 제공
 ```jsp
