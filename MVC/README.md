@@ -74,4 +74,8 @@
 #### 동작 순서
 **Front Controller -> Controller -> Service -> Dao -> Service -> Controller -> View**
 
+## Practice
 ### [게시판](https://github.com/ljiwoo59/Back_Study/tree/main/MVC/MVCBoard)
+* 로그인, 로그아웃
+* 게시글 작성, 선택, 삭제 기능
+* 제목, 작성자 검색 기능
