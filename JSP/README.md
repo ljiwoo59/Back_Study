@@ -35,10 +35,9 @@
 ### 주석
 ```jsp
 <%-- 주석 --%>
+```
 
 ### 식언어 (Expression Language)
-
-```
 
 ## Directive Element
 ### page Directive
