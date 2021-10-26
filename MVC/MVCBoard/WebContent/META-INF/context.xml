@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context reloadable="true">
+ <!--  CONNECTION POOL SETTING INFO -->
+<Resource name="jdbc/mysql" auth="Container"
+				type="javax.sql.DataSource"
+				username="ssafy"
+				password="ssafy"
+				driverClassName="com.mysql.cj.jdbc.Driver"
+				url="jdbc:mysql://localhost:3306/ssafydb?serverTimezone=UTC&amp;useUniCode=yes&amp;characterEncoding=UTF-8"
+				maxActive="20"
+				maxIdle="2"
+				removeAbandoned="true"/>
+</Context>
