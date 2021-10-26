@@ -29,4 +29,7 @@
 * 문법
 * 내장 객체
 
+## [JSTL](https://github.com/ljiwoo59/Back_Study/tree/main/JSTL)
+* Core tag
+
 ## [Cookie & Session](https://github.com/ljiwoo59/Back_Study/tree/main/Session_Cookie)
