@@ -232,4 +232,142 @@ CommonService memberService = context.getBean("memberService", MemberService.cla
 
 ## 스프링 빈 의존 관계 설정
 ### Constructor 이용
-* 객체 또느 값을 생성자를 통해 주입 받는다
+* **\<constructor-arg>** : *\<bean>* 의 하위태그로 설정한 *bean* 객체 또는 값을 **생성자**를 통해 주입하도록 설정
+
+```xml
+<!-- 객체 주입 시 -->
+<constructor-arg ref="bean name" />
+
+<!-- 문자열, primitive data 주입 시 -->
+<constructor-arg value="value" />
+
+<!-- 생성자의 argument 순서를 지키지 않을 경우 -->
+<!-- 속성(type, index, name)을 이용하여 match -->
+<bean id="player" class="com.test.di.Player">
+	<constructor-arg type="int" value="8"/>
+	<constructor-arg index="0" value="31"/>
+	<constructor-arg name="name" value="홍길동"/>
+</bean>
+
+<!-- 주입받는 argument 가 reference 인 경우 -->
+<bean id="dao" class="com.test.di.PlayerDao"/>
+<bean id="service" class="com.test.di.PlayerService">
+	<constructor-arg ref="dao"/>
+</bean>
+```
+
+### Property 이용
+* *Setter method*
+	* 하나의 값만 받을 수 있다
+* **\<property>** : *\<bean>* 의 하위태그로 설정한 *bean* 객체 또는 값을 **property** 를 통해 주입하도록 설정
+
+```xml
+<!-- 속성 이용 -->
+<property name="property name" ref="bean name" />
+<property name="property name" value="value" />
+
+<bean id="player" class="com.test.di.Player">
+	<property name="num" value="31"/>
+	<property name="name" value="홍길동"/>
+	<property name="position" value="8"/>
+</bean>
+
+<bean id="dao" class="com.test.di.PlayerDao"/>
+<bean id="service" class="com.test.di.PlayerService">
+	<property name="playerDao" ref="dao" />
+</bean>
+
+<!-- XML Namespace 이용 -->
+<!-- bean 태그의 스키마 설정에 namespace 등록 -->
+<!-- xmlns:p="http://www.springframework.org/schema/p" -->
+p:propertyname="value"
+p:propertyname-ref="bean_id"
+
+<bean id="dao" class="com.test.di.PlayerDao"/>
+<bean id="service" class="com.test.di.PlayerService">
+	p:age="30"
+	p:playerDao-ref="dao"
+</bean>
+```
+
+### Collection 계열 주입
+* ***\<constructor-arg> 또는 \<property>*** 의 하위태그로 *Collection* 값을 설정하는 태그를 이용하여 값 주입 설정
+
+|태그|Collection|설명|
+|----|----------|----|
+|**\<list>**|java.util.List|List 계열 컬렉션 값 목록 전달|
+|**\<set>**|java.util.Set|Set 계열 컬렉션 값 목록 전달|
+|**\<map>**|java.util.Map|Map 계열 컬렉션에 key-value 값 목록 전달|
+|**\<props>**|java.util.Properties|Properties 에 key(String)-value(String) 값 목록 전달|
+
+```xml
+<bean id="player" class="com.test.di.Player"/>
+<bean id="listdi" class="com.test.di.ListDi">
+	<property name="myList">
+		<!-- list or set -->
+		<list>
+			<!-- 기본적으로 String 으로 저장 -->
+			<value>20</value>
+			<!-- Integer 로 저장 -->
+			<value type="java.lang.Integer">20</value>
+			<ref bean="player"/>
+		</list>
+	</property>
+</bean>
+
+<bean id="player" class="com.test.di.Player"/>
+<bean id="mapdi" class="com.test.di.MapDi">
+	<property name="myMap">
+		<map>
+			<entry key="username" value="john"/>
+			<entry key="py" value-ref="player"/>
+		</map>
+	</property>
+</bean>
+
+<bean id="prordi" class="com.test.di.PropertiesDi"/>
+	<property name="dbInfo">
+		<props>
+			<prop key="driver">oracle.jdbc.driver.OracleDriver</prop>
+			<prop key="url">jdbcurl</prop>
+			<prop key="dbid">dbid</prop>
+			<prop key="dbpass">dbpass</prop>
+		</props>
+	</property>
+</bean>
+```
+
+### Annotation
+* 멤버변수에 직접 정의하는 경우 *Setter method* 를 만들지 않아도 됨
+* 특정 *Bean* 의 기능 수행을 위해 다른 *Bean* 을 참조해야 하는 경우 사용
+<br/>
+
+* **@Resource**
+	* 특정 *Bean* 이 **JNDI 리소스 (datasource, java messaging service destination or environment entry)** 에 대한 Injection 을 필요로 하는 경우 사용
+	* 멤버 변수, setter method 에사용 가능
+	* *타입*에 맞춰서 연결
+	* 동일한 타입의 *Bean* 이 여러 개일 경우 **name** 을 통해 구분
+		* @Resource(name="name")
+* **@Autowired**
+	* *Spring* 에서만 사용 가능
+		* 정밀한 DI 가 필요한 경우 유용
+	* 멤버변수, setter, constructor, 일반 method 사용 가능
+	* *타입*에 맞춰서 연결
+	* 동일한 타입의 *Bean* 이 여러 개일 경우 **@Qualifier("name") 으로 식별
+* **@Inject**
+	* Framework 에 종속적이지 않음
+	* javax.inject-x.x.x.jar 필요
+	* 멤버변수, setter, constructor, 일반 method 사용 가능
+	* *이름*으로 연결
+
+## 기타 설정
+### Bean 객체의 생성단위
+* ***BeanFactory*** 를 통해 *Bean* 을 요청 시 객체생성의 범위를 설정
+* ***\<bean>*** 의 scope 속성을 이용해 설정
+	* *singleton, prototype, request, session*
+		* *request 와 session* 은 WebApplicationContext 에서만 적용 가능
+
+### Factory Method 로부터 Bean 생성
+```xml
+<bean id="dbc" class="com.test.di.DBConnection" factory-method="getInstance"/>
+```
