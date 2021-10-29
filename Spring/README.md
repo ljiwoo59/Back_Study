@@ -371,3 +371,6 @@ p:propertyname-ref="bean_id"
 ```xml
 <bean id="dbc" class="com.test.di.DBConnection" factory-method="getInstance"/>
 ```
+
+## 스프링 빈의 생명 주기
+![image](https://user-images.githubusercontent.com/54715744/139454019-daa4b7b3-f760-4c0b-98a1-dd53bb08f9c9.png)
