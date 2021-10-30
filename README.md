@@ -38,4 +38,6 @@
 
 ---
 
-## [Spring Framework](https://github.com/ljiwoo59/Back_Study/tree/main/Spring)
+## Spring Framework
+### [Basics](https://github.com/ljiwoo59/Back_Study/tree/main/Spring/Basics)
+### [Spring Web MVC](https://github.com/ljiwoo59/Back_Study/tree/main/Spring/MVC)
