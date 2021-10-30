@@ -1,376 +1,229 @@
-# Spring Framework
-* 엔터프라이즈 급 애플리케이션을 만들기 위한 모든 기능을 종합적으로 제공하는 경량화 된 솔루션
-  * Low level 에 신경 쓰지 않고 Business Logic 개발에 전념할 수 있도록 해준다
-* Java Enterprise Edition(JEE) 이 제공하는 다수의 기능을 지원
-* *Dependency Injection(DI)*, *Aspect Oriented Programming(AOP)* 지원
+# Spring Web MVC
 
-## 구조
-![image](https://user-images.githubusercontent.com/54715744/139255736-6357e3ed-5748-4d2b-82fb-c629fb5a65fd.png)
-* Enterprise Application 개발 시 복잡함을 해결하는 Spring 의 핵심
+## Model-View-Controller
+* 어플리케이션의 확장을 위해 *Model, View, Controller* 세가지 영역으로 분리
+* 컴포넌트의 변경이 다른 영역 컴포넌트에 영향을 미치지 않음 (*유지보수 용이*)
+* 컴포넌트 간의 결합성이 낮아 프로그램 수정이 용이 (*확장성이 뛰어남*)
+* 화면과 비즈니스 로직을 분리해서 작업 가능
+* 영역별 개발로 인하여 확장성이 뛰어남
+* 표준화된 코드를 사용하므로 공동작업이 용이하고 유지보수성이 좋음
+* 개발과정이 복잡해 초기 개발속도가 늦음
+* 초보자가 이해하고 개발하기에 다소 어려움
 
-### POJO (Plain Old Java Object)
-* 특정 환경이나 기술에 종속적이지 않은 객체지향 원리에 충실한 자바 객체
-* 테스트하기 용이하며, 객체지향 설계를 자유롭게 적용 가능
+### Model
+* 어플리케이션 상태의 캡슐화
+* 상태 쿼리에 대한 응답
+* 어플리케이션의 기능 표현
+* 변경을 *view* 에 통지
 
-### PSA (Portable Service Abstraction)
-* 환경과 세부기술의 변경과 관계 없이 일관된 방식으로 기술에 접근할 수 있게 해주는 설계 원칙
-* Low Level 의 기술 구현 부분과 기술을 사용하는 인터페이스로 분리
-  * 트랜잭션 추상화, OXM 추상화, 데이터 액세스의 Exception 변환기능
-  * ex) 데이터베이스에 관계없이 동일하게 적용 할 수 있는 트랜잭션 처리방식
+### View
+* *모델*을 화면에 시각적으로 표현
+* *모델*에게 업데이트 요청
+* 사용자의 입력을 *컨트롤러*에 전달
+* *컨트롤러*가 *view* 를 선택하도록 허용
 
-### IoC (Inversion of Control) / DI (Dependency Injection)
-* 유연하게 확장 가능한 객체를 만들어 두고 객체 간의 의존관계는 외부에서 다이나믹하게 설정
+### Controller
+* 어플리케이션의 행위 정의
+* 사용자 액션을 모델 업데이트와 mapping
+* 응답에 대한 *view* 선택
 
-### AOP (Aspect Oriented Programming)
-* 관심사의 분리를 통해서 소프트웨어의 모듈성을 향상
-* 공통 모듈을 여러 코드에 쉽게 적용 가능
+# Spring MVC
+![image](https://user-images.githubusercontent.com/54715744/139532914-b29105fe-625f-44e8-8cea-44efd831b543.png)
 
----
 
-## 특징
-### 경량 컨테이너
-* 자바 객체를 담고 있는 컨테이너
-  * 자바 객체의 생성과 소멸과 같은 라이프사이클 관리
-* 언제든지 스프링 컨테이너로부터 필요한 객체를 가져와 사용 가능
+* *Spring* 은 *DI* 나 *AOP* 같은 기능 뿐만 아니라, **Servlet 기반의 WEB 개발을 위한 MVC Framework** 제공
+* *Model2 Architecture* 과 *Front Controller Pattern* 을 제공
+* *Transaction 처리나 DI 및 AOP* 등을 손쉽게 사용
 
-### DI (의존성 지원)
-* 설정 파일이나, 어노테이션을 통해서 객체 간의 의존 관계 설정 가능
-  * 객체는 의존하고 있는 객체를 직접 생성하거나 검색할 필요가 없음
+## 구성 요소
+### DispatcherServlet (Front Controller)
+* **모든 클라이언트의 요청을 전달받음**
+* *Controller* 에게 클라이언트의 요청을 전달하고, Controller 가 리턴한 결과를 *View* 에게 전달하여 알맞은 응답 생성
 
-### AOP (관점 지향 프로그래밍)
-* 문제를 해결하기 위한 *핵심관심 사항*과 전체에 적용되는 *공통관심 사항* 기준으로 프로그래밍
-  * 공통 모듈을 여러 코드에 쉽게 적용 가능
-* 프록시 기반의 **AOP** 지원 
-  * 트랜잭션, 로깅, 보안 같은 공통 기능을 분리하여 각 모듈에 적용 가능
+### HandlerMapping
+* **클라이언트의 요청 URL 을 어떤 Controller 가 처리할지를 결정**
+* *URL 과 요청 정보*를 기준으로 어떤 핸들러 객체를 사용할지 결정하는 객체
+* *DispatcherServlet* 은 하나 이상의 핸들러 매핑을 가질 수 있음
 
-### POJO
-* 특정한 인터페이스를 구현하거나 클래스를 상속 없이도 사용 가능
+### Controller
+* **클라이언트의 요청을 처리한 뒤, Model 을 호출하고 그 결과를 DispactherServlet 에게 알려줌*
 
-### IoC (제어의 반전)
-* *Servlet, EJB* 에 대한 제어권은 개발자가 담당하지 않음
+### ModelAndView
+* **Controller 가 처리한 데이터 및 화면에 대한 정보를 보유한 객체**
 
-### 트랜잭션 처리를 위한 일관된 방법 제공
-* 설정파일을 통해 *트랜잭션 관련정보*를 입력하기 때문에 구현에 상관 없이 동일한 코드 사용 가능
+### ViewResolver
+* **Controller 가 리턴한 View 이름을 기반으로 Controller 의 처리 결과를 보여줄 View 결정**
 
-### 영속성과 관련된 다양한 API 지원
-* *JDBC* 를 비롯하여 *iBatis, MyBatis, Hibernate, JPA* 등 DB 처리를 위한 라이브러리 연동 지원
+### View
+* **Controller 의 처리 결과를 보여줄 응답화면 생성**
 
-### 다양한 API 연동 지원
-* *JMS, 메일, 스케쥴링* 등 엔터프라이즈 애플리케이션 개발에 필요한 API 를 설정파일과 어노테이션을 통해 사용 가능
+## 실행 순서
+1. **DispatcherServlet** 이 요청을 수신
+	* *단일 Front Controller Servlet*
+	* 요청을 수신하여 처리를 다른 컴포넌트에 위임
+	* 어느 Controller 에 요청을 전송할지 결정
+2. **DispatcherServlet** 은 ***Handler Mapping*** 에 어느 *Controller* 를 사용할 것인지 문의
+	* URL 과 Mapping
+3. **DispatcherServlet** 은 요청을 **Controller** 에게 전송하고 **Controller** 는 요청을 처리한 후 결과 리턴
+	* Business Logic 수행 후 결과 정보(Model) 가 생성되어 JSP 와 같은 *View* 에서 사용됨
+4. **ModelAndView Object** 에 수행결과가 포함되어 ***DispatcherServlet*** 에 리턴
+5. ***ModelAndView*** 는 실제 JSP 정보를 갖고 있지 않으며, **ViewnResolver** 가 논리적 이름을 실제 JSP 이름으로 변환
+6. **View** 는 결과정보를 사용하여 화면을 표현
 
----
+## 구현
+1. **web.xml** 에 *DispatcherServlet* 등록 및 *Spring 설정파일* 등록
+2. **설정 파일**에 *HandlerMapping* 설정
+3. **Controller** 구현 및 **Context 설정 파일(servlet-context.xml)** 에 등록
+	* 좋은 디자인은 *Controller* 가 많은 일을 하지 않고 ***Service*** 에 처리를 위임
+4. *Controller* 와 *JSP* 연결을 위해 **View Resolver** 설정
+5. **JSP** 작성
 
-## Module
-![image](https://user-images.githubusercontent.com/54715744/139258551-e34ecca5-f063-4198-adae-38078f2ff3f4.png)
-
-### Spring Score
-* *Spring Framework* 의 핵심 기능을 제공하며, *Core 컨테이너*의 주요 컴포넌트는 **Bean Factory**
-  * *Bean Factory* 기반으로 *Bean 클래스*를 제어할 수 있는 기능 지원
-* *IoC/DI* 기능을 지원하는 영역 담당
-
-### Spring Context
-* *Spring* 을 Framework 로 만든 모듈
-* *Bean Factory* 의 개념 확장
-  * 국제화된 메시지, Application 생명주기 이벤트, 유효성 검증 지원
-
-### Spring AOP
-* 설정 관리 기능을 통해 AOP 기능을 *Spring Framework* 와 직접 통합
-
-### Spring DAO
-* *Spring JDBC DAO 추상레이어*는 다른 데이터베이스 벤더들의 예외 핸들링과 오류 메시지를 관리하는 중요한 예외계층 제공
-
-### Spring ORM (Object Relational Mapping)
-* *JDO, Hibernate, iBatis* 제공
-
-### Spring Web
-* *Application Context module* 상위에 구현되어 *Web 기반 Application* 에 context 제공
-
-### Spring Web MVC
-* 자체적으로 *MVC 프레임워크* 제공
-
----
-
-# IoC & Container
-
-## IoC
-![image](https://user-images.githubusercontent.com/54715744/139260958-0c5f7125-af83-41a1-b463-5df2715dbfd8.png)
-
-* 객체 생성을 *Container* 에게 위임하여 처리
-* 객체지향 언어에서 Object 간의 연결 관계를 런타임에 결정
-* 객체 간의 관계가 느슨하게 연결됨 (결합도가 낮음)
-  * 결합도가 높으면 클래스가 유지보수 될 때 그 클래스와 결합된 다른 클래스도 같이 유지보수 해야함 
-* *IoC* 의 구현 방법 중 하나가 **DI**
-
-### Dependency Lookup
-* 컨테이너가 *lookup context* 를 통해서 필요한 *Resource* 나 *Object* 를 얻는 방식
-* *JNDI* 이외의 방법을 사용한다면 JNDI 관련 코드를 오브젝트 내에서 일일히 변경해야 함
-* Lookup 한 Object 를 필요한 타입으로 casting 해주어야 함
-* Naming Exception 을 처리하기 위한 로직 필요
-
-### Dependency Injection
-* 컨테이너가 직접 의존 구조를 Object 에 설정 할 수 있도록 지정해주는 방식
-* Object 가 컨테이너의 존재 여부를 알 필요가 없음
-* *Setter Injection* 과 *Constructor Injection*
-
-## Container
-* 객체의 생성, 사용, 소멸에 해당하는 라이프사이클 담당
-* 라이프사이클을 기본으로 애플리케이션 사용에 필요한 주요 기능 제공
-  * Dependency 객체 제공
-  * Thread 관리
-  * 기타 애플리케이션 실행에 필요한 환경
-* 비즈니스 로직 외에 부가적인 기능들에 대해서는 독립적으로 관리
-* 서비스 look up 이나 Configuration 에 대한 일관성
-* 서비스 객체를 사용하기 위해 Factory 또는 Singleton 패턴을 구현하지 않아도 됨
-
-### IoC Container
-* 오브젝트의 생성과 관계설정, 사용, 제거 등의 작업 담당
-* 코드 대신 오브젝트에 대한 제어권을 갖고 있음 -> 스프링 컨테이너 == Ioc 컨테이너
-* 스프링에서 IoC 를 담당하는 컨테이너 : ***Bean Factory, ApplicationContext***
-
-### Spring DI Container
-* 관리하는 객체를 **Bean**, *Bean* 의 생명주기를 관리하는 의미로 **Bean Factory** 라 한다
-* 여러 가지 컨테이너 기능을 추가하여 **ApplicationContext** 라 한다
-
-#### BeanFacotry
-* Bean 등록, 생성, 조회, 반환 관리
-* 일반적으로 확장한 *ApplicationContext* 사용
-* *getBean()*
-
-#### ApplicationContext
-* *BeanFacotry* 와 같은 기능 제공
-* Spring 의 각종 부가 서비스 제공
-
----
-
-# DI
-* *Spring Bean* 은 기본적으로 **싱글톤**
-  * 컨테이너가 제공하는 모든 빈의 인스턴스는 *동일*
-  * 항상 새로운 인스턴스를 반환하고 싶은 경우 scope 를 *prototype* 으로 설정
-    * @scope("prototype")
-    * \<bean id="id" class="class" scope="prototype"/>
-  * Http Request 별로 새로운 인스턴스 생성 : *request*
-  * Http Session 별로 새로운 인스턴스 생성 : *Session*
-
-## Bean 설정
-### XML
-* 빈의 설정 메타 정보를 기술
-  * \<bean>
+### web.xml
 ```xml
-<bean id="memberDao" class="com.mvc.test.dao.MemberDaoImpl" />
-<bean id="memberService" class="com.mvc.test.service.MemberServiceImpl">
-  <property name="memberDao" ref="memberDao" />
-</bean>
+<!-- The definition of the Root Spring Container shared by all Servlets and Filters -->
+<context-param>
+	<param-name>contextConfigLocation</param-name>
+	<param-value>/WEB-INF/spring/root-context.xml</param-value>
+</context-param>
+
+<!-- Creates the Spring Container shared by all Servlets and Filters -->
+<listener>
+	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
+
+<!-- Processes application requests -->
+<servlet>
+	<servlet-name>appServlet</servlet-name>
+	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	<init-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/spring/appServlet/servlet-context.xml</param-value>
+	</init-param>
+	<load-on-startup>1</load-on-startup>
+</servlet>
+
+<servlet-mapping>
+	<servlet-name>appServlet</servlet-name>
+	<url-pattern>*.mvc</url-pattern>
+</servlet-mapping>
 ```
 
-### Annotation
-* XML 파일을 관리하는 것이 번거로워 사용
-* 빈으로 사용될 클래스에 특별한 annotation 을 부여해 자동으로 빈 등록 가능
-* 기본적으로 클래스 이름을 *빈의 아이디*로 사용
-* 반드시 **component-scan** 을 설정
+#### DispatcherServlet 설정
+* **\<init-param>** 을 설정하지 않으면 \<servlet-name>-context.xml 파일에서 ApplicationContext 정보를 로드
+* *Spring Container* 는 설정파일의 내용을 읽고 ApplicationContext 객체를 생성
+* **\<url-pattern>** 은 *DispatcherServlet* 이 처리하는 URL Mapping pattern 을 정의
+* 1개 이상의 *DispatcherServlet* 설정 가능
+	* 각 DispatcherServlet 마다 각각의 *ApplicationContext* 생성
+* **\<load-on-startup>1\</load-on-startup>** 설정 시 *WAS startup* 시 초기화 작업진행
 
 ```xml
-<context:component-scan base-package="com.mvc.test.*"/>
+<!-- Processes application requests -->
+<servlet>
+	<servlet-name>appServlet</servlet-name>
+	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	<init-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/spring/appServlet/servlet-context.xml</param-value>
+	</init-param>
+	<load-on-startup>1</load-on-startup>
+</servlet>
+
+<servlet>
+	<servlet-name>appServlet2</servlet-name>
+	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	<init-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/spring/appServlet/servlet-context2.xml</param-value>
+	</init-param>
+	<load-on-startup>1</load-on-startup>
+</servlet>
+
+<servlet-mapping>
+	<servlet-name>appServlet</servlet-name>
+	<url-pattern>*.mvc</url-pattern>
+</servlet-mapping>
+
+<servlet-mapping>
+	<servlet-name>appServlet2</servlet-name>
+	<url-pattern>*.action</url-pattern>
+</servlet-mapping>
 ```
 
-#### Stereotype Annotation
-* 빈 자동등록에 사용할 수 있는 annotation
-* 빈 자동인식을 위한 annotation
-  * 계층별로 빈의 특성이나 종류 구분
-  * AOP Pointcut 표현식을 사용하면 특정 annotation 이 달린 클래스만 설정 가능
-  * 특정 계층의 빈에 부가기능 부여
-
-|Annotation|적용 대상|
-|----------|---------|
-|**@Repository**|Data Access Layer 의 DAO 또는 Repository 클래스에 사용|
-||DataAccessException 자동변환과 같은 AOP 적용 대상을 선정하기 위해 사용|
-|**@Service**|Service Layer 의 클래스에 사용|
-|**@Controller**|Presentation Layer 의 MVC Controller 에 사용|
-||스프링 웹 서블릿에 의해 웹 요청을 처리하는 컨트롤러 빈으로 선정|
-|**@Component**|위의 Layer 구분을 적용하기 어려운 일반적인 경우에 설정|
-
-## Spring 설정
-### XML
-* Application 에서 사용할 Spring 자원을 설정하는 파일
-* Root tag 는 \<beans>
-* 파일명은 상관 없음
+#### 최상위 Root ContextLoader 설정
+* *Context 설정파일*을 로드하기 위해 **Listener** 설정 (ContextLoaderListener)
+* *Listener* 설정이 되면 **/WEB-INF/spring/root-context.xml** 파일을 읽어서 공통적으로 사용되는 최상위 Context 를 생성
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans:beans xmlns="http://www.springframework.org/schema/mvc"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:beans="http://www.springframework.org/schema/beans"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
-		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
- 
- </beans>
+<!-- The definition of the Root Spring Container shared by all Servlets and Filters -->
+<context-param>
+	<param-name>contextConfigLocation</param-name>
+	<param-value>/WEB-INF/spring/root-context.xml</param-value>
+</context-param>
+
+<!-- Creates the Spring Container shared by all Servlets and Filters -->
+<listener>
+	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
 ```
 
-### 빈 객체 생성 및 주입
-* 주입할 객체를 설정 파일에 설정
-  * \<bean> : 스프링 컨테이너가 관리할 Bean 객체를 설정
-* 기본 속성
-  * **name** : 주입 받을 곳에서 호출 할 이름 설정
-  * **id** : 주입 받을 곳에서 호출 할 이름 설정 (유일 값)
-  * **class** : 주입 할 객체의 클래스
-  * **factory-method** : Singleton 패턴으로 작성된 객체의 factory 메소드 호출 
+#### Application Context 분리
+* 어플리케이션 레이어에 따라 어플리케이션 컨텍스트 분리
 
-### 빈 객체 얻기
-* 설정 파일에 설정한 bean 을 컨테이너가 제공하는 주입기 역할의 api 를 통해 주입 받음
+|Layer|설정파일|
+|-----|--------|
+|**Security Layer**|board-security.xml|
+|**Web Layer**|board-servlet.xml|
+|**Service Layer**|board-service.xml|
+|**Persistence Layer**|board-dao.xml|
+
+### servlet-context.xml
+```xml
+<!-- Enables the Spring MVC @Controller programming model -->
+<annotation-driven />
+
+<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+<resources mapping="/resources/**" location="/resources/" />
+
+<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<beans:property name="prefix" value="/WEB-INF/views/" />
+	<beans:property name="suffix" value=".jsp" />
+</beans:bean>
+```
+
+#### Controller 등록
 
 ```java
-/*
-Resource resource = new ClassPathResource("com/mvc/test/controller/applicationContext.xml");
-BeanFactory factory = new XmlBeanFactory(resource);
-CommonService memberService = (MemberService) factory.getBean("memberService);
-*/
-
-ApplicationContext context = new ClassPathXmlApplicationContext("com/mvc/test/controller/applicationContext.xml");
-CommonService memberService = context.getBean("memberService", MemberService.class);
+@Controller
+public class BoardController {
+	@Autowired
+	BoardService service;
+		
+	//@RequestMapping(value = "/list.bod", method = RequestMethod.GET)
+	@GetMapping(value = "/list.bod")
+	public String list(Model model) {
+		ArrayList<Board> list = service.selectAll();	
+		model.addAttribute("list", list);		
+		return "list";//논리적 view(jsp) 이름
+	}
+}
 ```
-
-## 스프링 빈 의존 관계 설정
-### Constructor 이용
-* **\<constructor-arg>** : *\<bean>* 의 하위태그로 설정한 *bean* 객체 또는 값을 **생성자**를 통해 주입하도록 설정
 
 ```xml
-<!-- 객체 주입 시 -->
-<constructor-arg ref="bean name" />
+<!-- Enables the Spring MVC @Controller programming model -->
+<beans:bean class="com.mvc.controller.BoardController"/>
 
-<!-- 문자열, primitive data 주입 시 -->
-<constructor-arg value="value" />
-
-<!-- 생성자의 argument 순서를 지키지 않을 경우 -->
-<!-- 속성(type, index, name)을 이용하여 match -->
-<bean id="player" class="com.test.di.Player">
-	<constructor-arg type="int" value="8"/>
-	<constructor-arg index="0" value="31"/>
-	<constructor-arg name="name" value="홍길동"/>
-</bean>
-
-<!-- 주입받는 argument 가 reference 인 경우 -->
-<bean id="dao" class="com.test.di.PlayerDao"/>
-<bean id="service" class="com.test.di.PlayerService">
-	<constructor-arg ref="dao"/>
-</bean>
+<!-- @Controller Annotation 을 자동으로 찾아서 등록할 수도 있다 -->
+<annotation-driven />
 ```
 
-### Property 이용
-* *Setter method*
-	* 하나의 값만 받을 수 있다
-* **\<property>** : *\<bean>* 의 하위태그로 설정한 *bean* 객체 또는 값을 **property** 를 통해 주입하도록 설정
+#### ViewResolver 설정
+* *Controller* 와 *response page* 연결
 
 ```xml
-<!-- 속성 이용 -->
-<property name="property name" ref="bean name" />
-<property name="property name" value="value" />
-
-<bean id="player" class="com.test.di.Player">
-	<property name="num" value="31"/>
-	<property name="name" value="홍길동"/>
-	<property name="position" value="8"/>
-</bean>
-
-<bean id="dao" class="com.test.di.PlayerDao"/>
-<bean id="service" class="com.test.di.PlayerService">
-	<property name="playerDao" ref="dao" />
-</bean>
-
-<!-- XML Namespace 이용 -->
-<!-- bean 태그의 스키마 설정에 namespace 등록 -->
-<!-- xmlns:p="http://www.springframework.org/schema/p" -->
-p:propertyname="value"
-p:propertyname-ref="bean_id"
-
-<bean id="dao" class="com.test.di.PlayerDao"/>
-<bean id="service" class="com.test.di.PlayerService">
-	p:age="30"
-	p:playerDao-ref="dao"
-</bean>
+<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<beans:property name="prefix" value="/WEB-INF/views/" />
+	<beans:property name="suffix" value=".jsp" />
+</beans:bean>
 ```
-
-### Collection 계열 주입
-* ***\<constructor-arg> 또는 \<property>*** 의 하위태그로 *Collection* 값을 설정하는 태그를 이용하여 값 주입 설정
-
-|태그|Collection|설명|
-|----|----------|----|
-|**\<list>**|java.util.List|List 계열 컬렉션 값 목록 전달|
-|**\<set>**|java.util.Set|Set 계열 컬렉션 값 목록 전달|
-|**\<map>**|java.util.Map|Map 계열 컬렉션에 key-value 값 목록 전달|
-|**\<props>**|java.util.Properties|Properties 에 key(String)-value(String) 값 목록 전달|
-
-```xml
-<bean id="player" class="com.test.di.Player"/>
-<bean id="listdi" class="com.test.di.ListDi">
-	<property name="myList">
-		<!-- list or set -->
-		<list>
-			<!-- 기본적으로 String 으로 저장 -->
-			<value>20</value>
-			<!-- Integer 로 저장 -->
-			<value type="java.lang.Integer">20</value>
-			<ref bean="player"/>
-		</list>
-	</property>
-</bean>
-
-<bean id="player" class="com.test.di.Player"/>
-<bean id="mapdi" class="com.test.di.MapDi">
-	<property name="myMap">
-		<map>
-			<entry key="username" value="john"/>
-			<entry key="py" value-ref="player"/>
-		</map>
-	</property>
-</bean>
-
-<bean id="prordi" class="com.test.di.PropertiesDi"/>
-	<property name="dbInfo">
-		<props>
-			<prop key="driver">oracle.jdbc.driver.OracleDriver</prop>
-			<prop key="url">jdbcurl</prop>
-			<prop key="dbid">dbid</prop>
-			<prop key="dbpass">dbpass</prop>
-		</props>
-	</property>
-</bean>
-```
-
-### Annotation
-* 멤버변수에 직접 정의하는 경우 *Setter method* 를 만들지 않아도 됨
-* 특정 *Bean* 의 기능 수행을 위해 다른 *Bean* 을 참조해야 하는 경우 사용
-<br/>
-
-* **@Resource**
-	* 특정 *Bean* 이 **JNDI 리소스 (datasource, java messaging service destination or environment entry)** 에 대한 Injection 을 필요로 하는 경우 사용
-	* 멤버 변수, setter method 에사용 가능
-	* *타입*에 맞춰서 연결
-	* 동일한 타입의 *Bean* 이 여러 개일 경우 **name** 을 통해 구분
-		* @Resource(name="name")
-* **@Autowired**
-	* *Spring* 에서만 사용 가능
-		* 정밀한 DI 가 필요한 경우 유용
-	* 멤버변수, setter, constructor, 일반 method 사용 가능
-	* *타입*에 맞춰서 연결
-	* 동일한 타입의 *Bean* 이 여러 개일 경우 **@Qualifier("name") 으로 식별
-* **@Inject**
-	* Framework 에 종속적이지 않음
-	* javax.inject-x.x.x.jar 필요
-	* 멤버변수, setter, constructor, 일반 method 사용 가능
-	* *이름*으로 연결
-
-## 기타 설정
-### Bean 객체의 생성단위
-* ***BeanFactory*** 를 통해 *Bean* 을 요청 시 객체생성의 범위를 설정
-* ***\<bean>*** 의 scope 속성을 이용해 설정
-	* *singleton, prototype, request, session*
-		* *request 와 session* 은 WebApplicationContext 에서만 적용 가능
-
-### Factory Method 로부터 Bean 생성
-```xml
-<bean id="dbc" class="com.test.di.DBConnection" factory-method="getInstance"/>
-```
-
-## 스프링 빈의 생명 주기
-![image](https://user-images.githubusercontent.com/54715744/139454019-daa4b7b3-f760-4c0b-98a1-dd53bb08f9c9.png)
