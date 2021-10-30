@@ -78,7 +78,7 @@
 4. *Controller* 와 *JSP* 연결을 위해 **View Resolver** 설정
 5. **JSP** 작성
 
-### web.xml
+### * web.xml
 ```xml
 <!-- The definition of the Root Spring Container shared by all Servlets and Filters -->
 <context-param>
@@ -176,7 +176,7 @@
 |**Service Layer**|board-service.xml|
 |**Persistence Layer**|board-dao.xml|
 
-### servlet-context.xml
+### * servlet-context.xml
 ```xml
 <!-- Enables the Spring MVC @Controller programming model -->
 <annotation-driven />
