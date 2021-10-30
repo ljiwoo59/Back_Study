@@ -27,6 +27,8 @@
 * 사용자 액션을 모델 업데이트와 mapping
 * 응답에 대한 *view* 선택
 
+---
+
 # Spring MVC
 ![image](https://user-images.githubusercontent.com/54715744/139532914-b29105fe-625f-44e8-8cea-44efd831b543.png)
 
@@ -227,3 +229,257 @@ public class BoardController {
 	<beans:property name="suffix" value=".jsp" />
 </beans:bean>
 ```
+
+---
+
+# Controller
+## @Controller
+* **Class** 타입에 적용
+* ***servlet-context.xml*** 에 등록
+
+```xml
+<!-- 직접적으로 명시 -->
+<beans:bean name="boardController" class="com.mvc.controller.BoardController">
+	<beans:property id="boardService" ref="boardService" />
+</beans:bean>
+
+<!-- 자동 스캔 -->
+<annotation-driven />
+<context:component-scan base-package="com.board.controller" />
+```
+
+## @RequestMapping
+* *요청 URL mapping 정보*를 설정
+* **Class** 타입과 **method** 에 적용
+	* 메소드에 한정, 같은 URL 요청에 대하여 HTTP method(GET, POST..) 에 따라 서로 다른 메소드를 mapping 할 수 있음
+	* @RequestMapping(value="/index.do" method=RequestMethod.GET)
+* *@GetMapping, @PostMapping* 가능
+
+## Parameter
+* **Controller method** 의 *parameter* 로 다양한 Object 를 받을 수 있음
+
+|Parameter Type|설명|
+|--------------|----|
+|**HttpServletRequest**|필요시 Servlet API 를 사용할 수 있음|
+|**HttpServletResponse**||
+|**HttpSession**||
+|**Java.util.Locale**|현재 요청에 대한 Locale|
+|**InputStream, Reader**|요청 컨텐츠에 직접 접근할 때 사용|
+|**OutputStream, Writer**|응답 컨텐츠를 생성할 때 사용|
+|**@PathVariable 적용 파라미터**|URI 템플릿 변수에 접근할 때 사용|
+|**@RequestParam 적용 파라미터**|HTTP 요청 파라미터를 매핑|
+|**@RequestHeader 적용 파라미터**|HTTP 요청 헤더를 매핑|
+|**@CookieValue 적용 파라미터**|HTTP 쿠키 매핑|
+|**@RequestBody 적용 파라미터**|HTTP 요청의 몸체 내용에 접근할 때 사용|
+|**Map, Model, ModelMap**|View 에 전달할 Model data 를 설정할 때 사용|
+|**커맨드 객체**|HTTP 요청 parameter 를 저장한 객체|
+||기본적으로 클래스 이름을 모델명으로 사용|
+||**@ModelAttrivute** 설정으로 모델명을 설정할 수 있음|
+|**Errors, BindingResult**|HTTP 요청 파라미터를 커맨드 객체에 저장한 결과|
+||커맨드 객체를 위한 파라미터 바로 다음에 위치|
+|**SessionStatus**|폼 처리를 완료했음을 처리하기 위해 사용|
+||**@SessionAttributes** 를 명시한 session 속성을 제거하도록 이벤트 발생|
+
+## Return
+* **Controller method** 의 *return type*
+
+|Return Type|설명|
+|-----------|----|
+|**ModelAndView**|model 정보 및 view 정보를 담고있는 ModelAndView 객체|
+|**Model**|view 에 전달할 객체 정보를 담고있는 Model (view 의 이름은 요청 URL 로부터 결정)|
+|**Map**|view 에 전달할 객체 정보를 담고 있는 Map (view 의 이름은 요청 URL 로부터 결정)|
+|**String**|view 의 이름을 반환|
+|**View**|view 객체를 직접 리턴, 해당 view 객체를 이용해 view 생성|
+|**void**|method 가 ServletResponse 나 HttpServletResponse 타입의 parameter 를 갖는 경우|
+||method 가 직접 응답을 처리한다고 가정, 그렇지 않을 경우 요청 URL 로부터 결정된 view|
+|**@ResponseBody 적용**|리턴 객체를 HTTP 응답으로 전송|
+
+---
+
+# View
+* *Controller* 에서는 처리 결과를 보여줄 **View 이름**이나 **객체**를 리턴하고, *DispatcherServlet* 은 *View 이름*이나 *객체*를 이용하여 **View** 생성
+* **ViewResolver** : 논리적 view 와 실제 JSP 파일 Mapping
+	* **servlet-context.xml**
+	* InternalResourceViewResolver 는 prefix + 논리뷰 + suffix 로 설정
+		* ex) /WEB-INF/views/board/list.jsp 
+
+## 명시적 지정
+* **ModelAndView 와 String 리턴 타입**
+```java
+@Controller
+public class HomeController {
+	@RequestMapping("/hello.do")
+	public ModelAndView hello() {
+		ModelAndView mav = new ModelAndView("hello");
+		return mav;
+	}
+	
+	@RequestMapping("/hello.do")
+	public ModelAndView hello() {
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("hello");
+		return mav;
+	}
+	
+	@RequestMapping("/hello.do")
+	public String hello() {
+		return "hello";
+	}
+}
+```
+
+## 자동 지정
+* *RequestToViewNameTranslator* 를 이용하여 URL 로부터 *View* 이름 결정
+* **Model 과 Map 리턴 타입**
+* **void 리턴 타입이면서 ServletResponse 나 HttpServletResponse 타입의 parameter 가 없는 경우**
+
+```java
+@Controller
+public class HomeController {
+	@RequestMapping("/hello.do") // hello 가 view 이름이 됨
+	public Map<String, Object> hello() {
+		Map<String, Object> model = new HashMap<String, Object>();
+		return model;
+	}
+}
+```
+
+## Redirect
+* *View 이름*에 **redirect:** 접두어를 붙이면, 지정한 페이지로 redirect 됨
+
+```java
+@Controller
+public class BoardRegisterController {
+	@Autowired
+	private BoardService boardService;
+	
+	// 글 등록후 1페이지 글리스트로 이동
+	@RequestMapping(value="board/register.html", method=RequestMethod.POST)
+	public String register(@ModelAttribute("article") BoardDto boardDto) {
+		boardService.registerArticle(boardDto);
+		return "redirect:board/list.html?pg=1";
+	}
+}
+```
+
+---
+
+# Model
+* *View* 에 전달하는 데이터
+	* **@RequestMapping** 이 적용된 메소드의 ***Map, Model, ModelMap***
+	* **@RequestMapping** 이 적용된 메소드가 리턴하는 **ModelAndView**
+	* **@ModelAttribute** 이 적용된 메소드가 리턴하는 객체 
+
+## Map, Model, ModelMap
+* 메소드의 *argument* 로 받는 방식
+
+```java
+@Controller
+public class HomeController {
+	@RequestMapping("/hello.do")
+	public String hello([Map|ModelMap|Model] model) {
+		model.[put|addAttribute]("msg", "hi");
+		return "hello";
+	}
+}
+```
+
+### Model Interface 주요 메소드
+* Model addAttribute(String name, Object value);
+* Model addAttribute(Object value);
+* Model addAllAttributes(Collection\<?> values);
+* Model addAllAttributes(Map\<String, ?> attributes);
+* Model mergeAttributes(Map\<String, ?> attributes);
+* boolean containsAttribute(String name);
+
+## ModelAndView
+* *Controller* 에서 처리결과를 보여줄 *View* 와 *View 에 전달할 값(model)* 을 저장하는 용도로 사용
+* ***setViewName(String viewname);***
+* ***addObject(String name, Object value)***
+
+```java
+@Controller
+public class HomeController {
+	@RequestMapping("/hello.do")
+	public String hello() {
+		ModelAndView mav = new ModelAndView();
+		mav.setViewName("hello");
+		mav.addObject("msg", "hi");
+		return mav;
+	}
+}
+```
+
+## @ModelAttribute
+* *@RequestMapping* 이 적용되지 않은 별도 메소드로 모델이 추가될 객체를 생성
+
+```java
+@Controller
+public class HomeController {
+	@ModelAttribute("modelAttrMessage")
+	public String maMessage() {
+		return "bye";
+	}
+
+	@RequestMapping("/hello.do")
+	public String hello(Model model) {
+		model.addAttribute("msg", "hi");
+		return "hello";
+	}
+}
+```
+
+```jsp
+<!-- hello.jsp -->
+${msg}
+${modelAttrMessage}
+```
+
+## 요청 URL 매칭
+* **@RequestMapping 값으로 {템플릿변수} 사용**
+	* 클래스와 메소드 모두 사용 가능
+* **@PathVariable 을 이용해서 {템플릿변수}와 동일한 이름을 갖는 *parameter* 추가**
+	* 클래스에 정의된 템플릿변수 값도 *parameter* 로 추가해야 함
+* Ant 스타일의 URI 패턴 지원
+	* **?** : 하나의 문자열과 대치
+	* **\*** : 하나 이상의 문자열과 대치
+	* **\**** : 하나 이상의 디렉토리와 대치 
+
+```java
+@Controller
+public class BoardViewController {
+	@Autowired
+	private BoardService boardService;
+	
+	@RequestMapping("/blog/{userId}/board1/{articleSeq}")
+	public String viewArticle(@PathVariable String userId, @PathVariable int articleSeq, Model model) {
+		BoardDto boardDto = boardService.getBlogArticle(userId, articleSeq);
+		model.addAttribute("article", boardDto);
+		return "view";
+	}
+}
+```
+
+---
+
+# Spring Web Application 동작
+![image](https://user-images.githubusercontent.com/54715744/139538277-3117601b-c3e6-425a-9416-57b73dacbb32.png)
+
+1. 웹 어플리케이션이 실행되면 *Tomcat(WAS)* 에 의해 **web.xml** 이 loading
+2. *web.xml* 에 등록되어 있는 **ContextLoaderListener (Java Class)** 가 생성.
+	* *ContextLoaderListener class* 는 ServletContextListener interface 를 구현하고 있음
+	* **ApplicationContext** 를 생성하는 역할 수행
+3. 생성된 *ContextLoaderListener* 는 **root-context.xml** 을 loading
+4. *root-context.xml* 에 등록되어 있는 **Spring Container** 가 구동
+	* **Business Logic (Service), Database Logic (DAO), VO 객체**들이 생성
+5. *Client* 로부터 **요청**이 들어옴
+6. **DispatcherSerlvet (Servlet)** 이 생성
+	* **FrontController** 역할 수행
+	* *Clinet* 로부터 요청 온 메시지를 분석하여 알맞은 **PageController** 에게 전달하고 요청에 따른 응답을 어떻게 할지 결정
+	* 실질적인 작업은 *PageController* 에서 이루어짐
+	* *HandlerMapping, ViewResolver class*
+7. *DispatcherServlet* 은 **servlet-context.xml** 을 loading
+8. 두번째 **Spring Container** 가 구동되며 응답에 맞는 **PageController** 들이 동작
+	* 첫번째 *Spring Container* 가 구동되며 생성된 **DAO, VO, Service class** 들과 협업하여 알맞은 작업 처리 
+
+
