@@ -1,376 +1,295 @@
-# Spring Framework
-* 엔터프라이즈 급 애플리케이션을 만들기 위한 모든 기능을 종합적으로 제공하는 경량화 된 솔루션
-  * Low level 에 신경 쓰지 않고 Business Logic 개발에 전념할 수 있도록 해준다
-* Java Enterprise Edition(JEE) 이 제공하는 다수의 기능을 지원
-* *Dependency Injection(DI)*, *Aspect Oriented Programming(AOP)* 지원
+# Aspect Oriented Programming
+![image](https://user-images.githubusercontent.com/54715744/139575312-0f81c994-9e80-4f05-961a-30764ab6b725.png)
 
-## 구조
-![image](https://user-images.githubusercontent.com/54715744/139255736-6357e3ed-5748-4d2b-82fb-c629fb5a65fd.png)
-* Enterprise Application 개발 시 복잡함을 해결하는 Spring 의 핵심
 
-### POJO (Plain Old Java Object)
-* 특정 환경이나 기술에 종속적이지 않은 객체지향 원리에 충실한 자바 객체
-* 테스트하기 용이하며, 객체지향 설계를 자유롭게 적용 가능
+* **핵심 관심 사항(core concern)** 과 **공통 관심 사항(cross-cutting concern)** 을 기준으로 프로그래밍함으로서 공통 모듈을 손쉽게 적용
+* 핵심적인 기능에서 부가적인 기능을 분리하고, 분리한 부가기능을 ***Aspect*** 라는 모듈 형태로 만들어 설계하고 개발하는 방법
+* 핵심기능을 설계하고 구현할 때 *객체지향*적인 가치를 지킬 수 있도록 도와주는 개념
 
-### PSA (Portable Service Abstraction)
-* 환경과 세부기술의 변경과 관계 없이 일관된 방식으로 기술에 접근할 수 있게 해주는 설계 원칙
-* Low Level 의 기술 구현 부분과 기술을 사용하는 인터페이스로 분리
-  * 트랜잭션 추상화, OXM 추상화, 데이터 액세스의 Exception 변환기능
-  * ex) 데이터베이스에 관계없이 동일하게 적용 할 수 있는 트랜잭션 처리방식
+#### 적용 예
+* **간단한 메소드의 성능 검사**
+	* 개발 도중 DB 에 데이터를 넣고 빼는 등의 배치 작업에 대하여 시간을 측정하고 쿼리를 개선 할 때
+	* 해당 메소드의 처음과 끝에 System.currentTimeMillis() 또는 스프링의 StopWatch 코드를 사용하기는 번거로움
+	* 해당 작업을 하는 코드를 *밖에서 설정*하고 해당 부분을 사용하는것이 편리
+* **트랜잭션 처리**
+	* 트랜잭션의 경우, 비즈니스 로직의 전후에 설정
+	* 매번 사용하는 트랜잭션 코드는 번거롭고 복잡함
+* **예외 반환**
+	* 스프링에는 *DataAccessException* 이라는 예외 계층 구조가 있음
+	* ***Aspect*** 는 본인의 프레임워크나 애플리케이션에서 별도의 예외 계층 구조로 변환하고 싶을 때 유용
+* **아키텍처 검증**
+* **기타**
+	* *Hibernate* 와 *JDBC* 를 같이 사용할 경우, DB 동기화 문제 해결
+	* 멀티스레드 safety 관련하여 작업하는 경우, 메소드들에 일괄적으로 락을 설정하는 Aspect
+	* 데드락 등으로 인한 *PessimisticLockingFailureException* 등의 예외를 만났을 때 재시도하는 Aspect
+	* 로깅, 인증, 권한 등
 
-### IoC (Inversion of Control) / DI (Dependency Injection)
-* 유연하게 확장 가능한 객체를 만들어 두고 객체 간의 의존관계는 외부에서 다이나믹하게 설정
+## AOP 구조
+* *핵심 관심 사항*에 *공통 관심 사항*을 어떻게 적용시킬 것인가가 관건
 
-### AOP (Aspect Oriented Programming)
-* 관심사의 분리를 통해서 소프트웨어의 모듈성을 향상
-* 공통 모듈을 여러 코드에 쉽게 적용 가능
+#### 예시
+* *핵심 관심 사항* : BankingService, AccountService, CustomerService
+* *공통 관심 사항* : Security, Transaction, Other...
 
----
+## AOP 용어
+### Target
+* **핵심 기능을 담고 있는 모듈**로 ***부가기능을 부여할 대상***이 됨
 
-## 특징
-### 경량 컨테이너
-* 자바 객체를 담고 있는 컨테이너
-  * 자바 객체의 생성과 소멸과 같은 라이프사이클 관리
-* 언제든지 스프링 컨테이너로부터 필요한 객체를 가져와 사용 가능
+### Advice
+* **어느 시점(수행 전/후, 예외 발생 후 등..) 에 어떤 공통 관심 기능(*Aspect*) 을 적용할지 정의**
+* ***Target에 제공할 부가기능을 담고 있는 모듈***
 
-### DI (의존성 지원)
-* 설정 파일이나, 어노테이션을 통해서 객체 간의 의존 관계 설정 가능
-  * 객체는 의존하고 있는 객체를 직접 생성하거나 검색할 필요가 없음
+### JoinPoint
+* ***Aspect* 가 적용 될 수 있는 지점(method, field)**
+* ***Target 객체가 구현한 인터페이스의 모든 method***는 **JoinPoint**
 
-### AOP (관점 지향 프로그래밍)
-* 문제를 해결하기 위한 *핵심관심 사항*과 전체에 적용되는 *공통관심 사항* 기준으로 프로그래밍
-  * 공통 모듈을 여러 코드에 쉽게 적용 가능
-* 프록시 기반의 **AOP** 지원 
-  * 트랜잭션, 로깅, 보안 같은 공통 기능을 분리하여 각 모듈에 적용 가능
+### Pointcut
+* **공통 관심 사항이 적용될 *JoinPoint***
+* ***Advice 를 적용할 Target 의 method 를 선별하는 정규 표현식***
+* *execution* 으로 시작하고 method 의 *Signature* 를 비교하는 방법을 주로 이용
 
-### POJO
-* 특정한 인터페이스를 구현하거나 클래스를 상속 없이도 사용 가능
+|Pointcut|선택된 JoinPoint|
+|--------|----------------|
+|**execution(public \* \*(..))**|public 메소드 실행|
+|**execution(\* set\*(..))**|이름이 set 으로 시작하는 모든 메소드 실행|
+|**execution(\* com.test.serviceAccountService.\*(..))**|AccountService 인터페이스의 모든 메소드 실행|
+|**execution(\* com.test.service.\*.\*(..))**|service 패키지의 모든 메소드 실행|
+|**execution(\* com.test.service..\*.\*(..))**|service 패키지와 하위 패키지의 모든 메소드 실행|
+|**within(com.test.service.\*)**|service 패키지 내의 모든 결합점|
+|**within(com.test.service..\*)**|service 패키지 및 하위 패키지의 모든 결합점|
+|**this(com.test.service.AccountService)**|AccountService 인터페이스를 구현하는 프록시 개체의 모든 결합점|
+|**target(com.test.service.AccountService)**|AccountService 인터페이스를 구현하는 대상 객체의 모든 결합점|
+|**args(java.io.Serializable)**|하나의 파라미터를 갖고 전달된 인자가 Serializable 인 모든 결합점|
+|**@target(org.springframework.transaction.annotation.Transactional)**|대상 객체가 @Transactional 을 갖는 모든 결합점|
+|**@within(org.springframework.transaction.annotation.Transactional)**|대상 객체의 선언 타입이 @Transactional 을 갖는 모든 결합점|
+|**@annotation(org.springframework.transaction.annotation.Transactional)**|실행 메소드가 @Transactional 을 갖는 모든 결합점|
+|**@args(com.test.security.Classified)**|단일 파라미터를 받고, 전달된 인자 타입이 @Classified 를 갖는 모든 결합점|
+|**bean(accountRepository)**|accountRepository 빈|
+|**!bean(accountRepository)**|accountRepository 빈을 제외한 모든 빈|
+|**bean(\*)**|모든 빈|
+|**bean(account\*)**|이름이 account 로 시작되는 모든 빈|
+|**bean(\*Repository)**|이름이 Repository 로 끝나는 모든 빈|
+|**bean(accounting/\*)**|이름이 accounting/ 으로 시작하는 모든 빈|
+|**bean(\*dataSource)\|\|bean(\*DataSource)**|이름이 dataSource 나 DataSource 로 끝나는 모든 빈|
 
-### IoC (제어의 반전)
-* *Servlet, EJB* 에 대한 제어권은 개발자가 담당하지 않음
+### Aspect
+* **여러 객체에서 공통으로 적용되는 공통 관심 사항(transaction, logging, security...)**
+* ***AOP 의 기본 모듈***
+* ***Aspect = Advice + Pointcut***
+* **Singleton 형태의 객체**
 
-### 트랜잭션 처리를 위한 일관된 방법 제공
-* 설정파일을 통해 *트랜잭션 관련정보*를 입력하기 때문에 구현에 상관 없이 동일한 코드 사용 가능
+### Advisor
+* ***Advisor = Advice + Pointcut***
+* Spring AOP 에서만 사용되는 용어
 
-### 영속성과 관련된 다양한 API 지원
-* *JDBC* 를 비롯하여 *iBatis, MyBatis, Hibernate, JPA* 등 DB 처리를 위한 라이브러리 연동 지원
-
-### 다양한 API 연동 지원
-* *JMS, 메일, 스케쥴링* 등 엔터프라이즈 애플리케이션 개발에 필요한 API 를 설정파일과 어노테이션을 통해 사용 가능
-
----
-
-## Module
-![image](https://user-images.githubusercontent.com/54715744/139258551-e34ecca5-f063-4198-adae-38078f2ff3f4.png)
-
-### Spring Score
-* *Spring Framework* 의 핵심 기능을 제공하며, *Core 컨테이너*의 주요 컴포넌트는 **Bean Factory**
-  * *Bean Factory* 기반으로 *Bean 클래스*를 제어할 수 있는 기능 지원
-* *IoC/DI* 기능을 지원하는 영역 담당
-
-### Spring Context
-* *Spring* 을 Framework 로 만든 모듈
-* *Bean Factory* 의 개념 확장
-  * 국제화된 메시지, Application 생명주기 이벤트, 유효성 검증 지원
-
-### Spring AOP
-* 설정 관리 기능을 통해 AOP 기능을 *Spring Framework* 와 직접 통합
-
-### Spring DAO
-* *Spring JDBC DAO 추상레이어*는 다른 데이터베이스 벤더들의 예외 핸들링과 오류 메시지를 관리하는 중요한 예외계층 제공
-
-### Spring ORM (Object Relational Mapping)
-* *JDO, Hibernate, iBatis* 제공
-
-### Spring Web
-* *Application Context module* 상위에 구현되어 *Web 기반 Application* 에 context 제공
-
-### Spring Web MVC
-* 자체적으로 *MVC 프레임워크* 제공
-
----
-
-# IoC & Container
-
-## IoC
-![image](https://user-images.githubusercontent.com/54715744/139260958-0c5f7125-af83-41a1-b463-5df2715dbfd8.png)
-
-* 객체 생성을 *Container* 에게 위임하여 처리
-* 객체지향 언어에서 Object 간의 연결 관계를 런타임에 결정
-* 객체 간의 관계가 느슨하게 연결됨 (결합도가 낮음)
-  * 결합도가 높으면 클래스가 유지보수 될 때 그 클래스와 결합된 다른 클래스도 같이 유지보수 해야함 
-* *IoC* 의 구현 방법 중 하나가 **DI**
-
-### Dependency Lookup
-* 컨테이너가 *lookup context* 를 통해서 필요한 *Resource* 나 *Object* 를 얻는 방식
-* *JNDI* 이외의 방법을 사용한다면 JNDI 관련 코드를 오브젝트 내에서 일일히 변경해야 함
-* Lookup 한 Object 를 필요한 타입으로 casting 해주어야 함
-* Naming Exception 을 처리하기 위한 로직 필요
-
-### Dependency Injection
-* 컨테이너가 직접 의존 구조를 Object 에 설정 할 수 있도록 지정해주는 방식
-* Object 가 컨테이너의 존재 여부를 알 필요가 없음
-* *Setter Injection* 과 *Constructor Injection*
-
-## Container
-* 객체의 생성, 사용, 소멸에 해당하는 라이프사이클 담당
-* 라이프사이클을 기본으로 애플리케이션 사용에 필요한 주요 기능 제공
-  * Dependency 객체 제공
-  * Thread 관리
-  * 기타 애플리케이션 실행에 필요한 환경
-* 비즈니스 로직 외에 부가적인 기능들에 대해서는 독립적으로 관리
-* 서비스 look up 이나 Configuration 에 대한 일관성
-* 서비스 객체를 사용하기 위해 Factory 또는 Singleton 패턴을 구현하지 않아도 됨
-
-### IoC Container
-* 오브젝트의 생성과 관계설정, 사용, 제거 등의 작업 담당
-* 코드 대신 오브젝트에 대한 제어권을 갖고 있음 -> 스프링 컨테이너 == Ioc 컨테이너
-* 스프링에서 IoC 를 담당하는 컨테이너 : ***Bean Factory, ApplicationContext***
-
-### Spring DI Container
-* 관리하는 객체를 **Bean**, *Bean* 의 생명주기를 관리하는 의미로 **Bean Factory** 라 한다
-* 여러 가지 컨테이너 기능을 추가하여 **ApplicationContext** 라 한다
-
-#### BeanFacotry
-* Bean 등록, 생성, 조회, 반환 관리
-* 일반적으로 확장한 *ApplicationContext* 사용
-* *getBean()*
-
-#### ApplicationContext
-* *BeanFacotry* 와 같은 기능 제공
-* Spring 의 각종 부가 서비스 제공
+### Weaving
+* **어떤 *Advice* 를 어떤 *Pointcut(핵심사항)* 에 적용시킬 것인지에 대한 설정(*Advisor*)**
+* ***Pointcut 에 의해서 결정된 Target 의 JoinPoint 에 부가기능(Advice) 를 삽입하는 과정***
+* AOP 의 핵심기능(*Target*) 의 코드에 영향을 주지 않으면서 필요한 부가기능(*Advice*) 을 추가할 수 있도록 해주는 핵심적인 처리과정
 
 ---
 
-# DI
-* *Spring Bean* 은 기본적으로 **싱글톤**
-  * 컨테이너가 제공하는 모든 빈의 인스턴스는 *동일*
-  * 항상 새로운 인스턴스를 반환하고 싶은 경우 scope 를 *prototype* 으로 설정
-    * @scope("prototype")
-    * \<bean id="id" class="class" scope="prototype"/>
-  * Http Request 별로 새로운 인스턴스 생성 : *request*
-  * Http Session 별로 새로운 인스턴스 생성 : *Session*
+# Spring AOP
+### Proxy 기반 AOP 지원
+* ***Target 객체***에 대한 **Proxy** 를 만들어 제공
+	* 실행시간에 생성
+	* **Proxy** 는 ***Advice 를 Target 객체에 적용하면서 생성되는 객체***
 
-## Bean 설정
-### XML
-* 빈의 설정 메타 정보를 기술
-  * \<bean>
-```xml
-<bean id="memberDao" class="com.mvc.test.dao.MemberDaoImpl" />
-<bean id="memberService" class="com.mvc.test.service.MemberServiceImpl">
-  <property name="memberDao" ref="memberDao" />
-</bean>
-```
+### Proxy 가 호출을 가로챈다 (Intercept)
+* **전처리 Advice** : ***Target***에 대한 호출을 가로챈 다음 ***Advice 의 부가기능 로직을 수행하고 난 후에 Target 의 핵심 기능 로직을 호출***
+* **후처리 Advice** : ***Target 의 핵심 기능 로직을 호출한 후에 Advice 의 부가기능을 수행***
 
-### Annotation
-* XML 파일을 관리하는 것이 번거로워 사용
-* 빈으로 사용될 클래스에 특별한 annotation 을 부여해 자동으로 빈 등록 가능
-* 기본적으로 클래스 이름을 *빈의 아이디*로 사용
-* 반드시 **component-scan** 을 설정
+### 메소드 JoinPoint 만 지원
+* **동적 Proxy** 기반으로 AOP 를 구현하므로 **method JoinPoint** 만 지원
+* **핵심기능(*Target*) 의 method 가 호출되는 런타임 시점에만 부가기능(*Advice*) 를 적용할 수 있음**
+* AspectJ 같은 고급 AOP framework 이용 시, 객체의 생성, 필드값의 조회와 조작, static method 호출 및 초기화 등의 다양한 작업에 부가기능 적용 가능
 
-```xml
-<context:component-scan base-package="com.mvc.test.*"/>
-```
-
-#### Stereotype Annotation
-* 빈 자동등록에 사용할 수 있는 annotation
-* 빈 자동인식을 위한 annotation
-  * 계층별로 빈의 특성이나 종류 구분
-  * AOP Pointcut 표현식을 사용하면 특정 annotation 이 달린 클래스만 설정 가능
-  * 특정 계층의 빈에 부가기능 부여
-
-|Annotation|적용 대상|
-|----------|---------|
-|**@Repository**|Data Access Layer 의 DAO 또는 Repository 클래스에 사용|
-||DataAccessException 자동변환과 같은 AOP 적용 대상을 선정하기 위해 사용|
-|**@Service**|Service Layer 의 클래스에 사용|
-|**@Controller**|Presentation Layer 의 MVC Controller 에 사용|
-||스프링 웹 서블릿에 의해 웹 요청을 처리하는 컨트롤러 빈으로 선정|
-|**@Component**|위의 Layer 구분을 적용하기 어려운 일반적인 경우에 설정|
-
-## Spring 설정
-### XML
-* Application 에서 사용할 Spring 자원을 설정하는 파일
-* Root tag 는 \<beans>
-* 파일명은 상관 없음
-
+# Spring AOP 구현 방법
+## POJO Class 이용
+### XML Schema 확장 기법을 통해 설정파일 작성
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+<beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:beans="http://www.springframework.org/schema/beans"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
-		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
- 
- </beans>
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+	
+	<bean id="logging" class="com.test.aop.LoggingTest"/>
+	
+	<aop:config>
+		<aop:aspect id="logAspect" ref="logging">
+			<aop:pointcut id="logmethod" expression="execution(public * com.test.aop..*(..))"/>
+			<aop:around pointcut-ref="logmethod" method="pringlog"/>
+		</aop:aspect>
+	</aop:config>
+	
+</beans>
 ```
 
-### 빈 객체 생성 및 주입
-* 주입할 객체를 설정 파일에 설정
-  * \<bean> : 스프링 컨테이너가 관리할 Bean 객체를 설정
-* 기본 속성
-  * **name** : 주입 받을 곳에서 호출 할 이름 설정
-  * **id** : 주입 받을 곳에서 호출 할 이름 설정 (유일 값)
-  * **class** : 주입 할 객체의 클래스
-  * **factory-method** : Singleton 패턴으로 작성된 객체의 factory 메소드 호출 
+* aop namespace 와 XML Schema 추가
+* aop namespace 를 이용한 설정
+* **\<aop:aspect> 설정**
+	* ***한 개의 Aspect(공통 관심 기능) 설정***
+	* *ref* 속성을 통해 공통 기능을 가지고 있는 *bean* 을 연결
+	* *id* 는 태그의 식별자 설정
+	* 자식 태그로 *\<aop:pointcut>, advice* 관련 태그가 올 수 있다
+* **\<aop:pointcut> 설정**
+	* ***Pointcut(공통 기능이 적용될 곳) 을 지정***
+	* *\<aop:config> 나 \<aop:aspect> 의 자식 태그*
+		* \<aop:config> 전역적으로 사용
+		* \<aop:aspect> 내부에서 사용
+	* *AspectJ 표현식*을 통해 pointcut 지정
+	* *id* 는 advice 태그의 식별자
+	* *expression* 은 pointcut 지정
 
-### 빈 객체 얻기
-* 설정 파일에 설정한 bean 을 컨테이너가 제공하는 주입기 역할의 api 를 통해 주입 받음
+#### AOP 설정 태그
+|Tag|설명|
+|---|----|
+|**\<aop:config>**|aop 설정의 root 태그 (weaving 들의 묶음)|
+|**\<aop:aspect>**|Aspect 설정 (하나의 weaving 에 대한 설정)|
+|**\<aop:pointcut>**|Pointcut 설정|
+
+#### Advice 설정 태그
+|Tag|설명|
+|---|----|
+|**\<aop:before>**|method 실행 전 실행될 Advice|
+|**\<aop:after-returning>**|method 가 정상 실행 후 실행될 Advice|
+|**\<aop:after-throwing>**|method 에서 예외 발생시 실행될 Advice (catch block)|
+|**\<aop:after>**|method 가 정상 또는 예외 발생에 상관없이 실행될 Advice (finally block)|
+|**\<aop:around>**|모든 시점(실행 전, 후) 에서 적용시킬 수 있는 Advice|
+
+### POJO 기반 Advice Class 작성
+* 설정 파일의 *Advice* 관련 태그에 맞게 작성
+* \<bean> 으로 등록하며 \<aop:aspect> 의 *ref* 속성으로 참조
+* 공통 기능 메소드 : Advice 관련 태그들의 method 속성의 값이 method 의 이름이 된다
+
+#### Before Advice
+* **대상 객체의 메소드가 실행되기 전에 실행됨**
+* **return type** : 리턴 값을 갖더라도 실제 Advice 의 적용과정에서 사용되지 않기 때문에 ***void*** 를 쓴다
+* **parameter** : 없거나 대상객체 및 호출되는 메소드에 대한 정보 또는 파라미터에 대한 정보가 필요하다면 ***JoinPoint*** 에 전달
+
+```xml
+<aop:config>
+	<aop:aspect id="beforeAspect" ref="userCheckAdvice">
+		<aop:pointcut id="publicMethod" expression="execution(public * com.test.spring.aop..*Controller.*(..))"/>
+		<aop:before method="before" pointcut-ref="publicMethod"/>
+	</aop:aspect>
+</aop:config>
+```
 
 ```java
-/*
-Resource resource = new ClassPathResource("com/mvc/test/controller/applicationContext.xml");
-BeanFactory factory = new XmlBeanFactory(resource);
-CommonService memberService = (MemberService) factory.getBean("memberService);
-*/
-
-ApplicationContext context = new ClassPathXmlApplicationContext("com/mvc/test/controller/applicationContext.xml");
-CommonService memberService = context.getBean("memberService", MemberService.class);
+public void before(JoinPoint joinPoint) {
+	String name = joinPoint.getSignature().toShortString();
+	System.out.println("Advice : " + name);
+}
 ```
 
-## 스프링 빈 의존 관계 설정
-### Constructor 이용
-* **\<constructor-arg>** : *\<bean>* 의 하위태그로 설정한 *bean* 객체 또는 값을 **생성자**를 통해 주입하도록 설정
+1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드를 호출
+2. AOP 프록시는 \<aop:before> 에서 지정한 메소드를 호출
+	* 메소드에서 exception 을 발생시킬 경우 대상 객체의 메소드가 호출 되지 않음
+3. AOP 프록시는 Aspect 기능 실행 후 실제 Bean 객체의 메소드를 호출 
+
+#### After Returning Advice
+* **대상 객체의 메소드 실행이 정상적으로 끝난뒤 실행됨**
+* **return type** : ***void***
+* **parameter** : 없거나 ***JoinPoint*** 또는 ***메소드에서 반환되는 특정 객체 타입***
+	* JoinPoint 는 항상 첫번째로 온다
 
 ```xml
-<!-- 객체 주입 시 -->
-<constructor-arg ref="bean name" />
-
-<!-- 문자열, primitive data 주입 시 -->
-<constructor-arg value="value" />
-
-<!-- 생성자의 argument 순서를 지키지 않을 경우 -->
-<!-- 속성(type, index, name)을 이용하여 match -->
-<bean id="player" class="com.test.di.Player">
-	<constructor-arg type="int" value="8"/>
-	<constructor-arg index="0" value="31"/>
-	<constructor-arg name="name" value="홍길동"/>
-</bean>
-
-<!-- 주입받는 argument 가 reference 인 경우 -->
-<bean id="dao" class="com.test.di.PlayerDao"/>
-<bean id="service" class="com.test.di.PlayerService">
-	<constructor-arg ref="dao"/>
-</bean>
+<aop:config>
+	<aop:aspect id="afterAspect" ref="historyAdvice">
+		<aop:pointcut id="publicMethod" expression="execution(public * com.test.spring.aop..*Controller.*(..))"/>
+		<!-- 메소드가 정상적으로 결과값을 리턴했을 경우 -->
+		<aop:after-returning method="history" pointcut-ref="publicMethod" returning="ret"/>
+	</aop:aspect>
+</aop:config>
 ```
 
-### Property 이용
-* *Setter method*
-	* 하나의 값만 받을 수 있다
-* **\<property>** : *\<bean>* 의 하위태그로 설정한 *bean* 객체 또는 값을 **property** 를 통해 주입하도록 설정
-
-```xml
-<!-- 속성 이용 -->
-<property name="property name" ref="bean name" />
-<property name="property name" value="value" />
-
-<bean id="player" class="com.test.di.Player">
-	<property name="num" value="31"/>
-	<property name="name" value="홍길동"/>
-	<property name="position" value="8"/>
-</bean>
-
-<bean id="dao" class="com.test.di.PlayerDao"/>
-<bean id="service" class="com.test.di.PlayerService">
-	<property name="playerDao" ref="dao" />
-</bean>
-
-<!-- XML Namespace 이용 -->
-<!-- bean 태그의 스키마 설정에 namespace 등록 -->
-<!-- xmlns:p="http://www.springframework.org/schema/p" -->
-p:propertyname="value"
-p:propertyname-ref="bean_id"
-
-<bean id="dao" class="com.test.di.PlayerDao"/>
-<bean id="service" class="com.test.di.PlayerService">
-	p:age="30"
-	p:playerDao-ref="dao"
-</bean>
+```java
+public void history(JoinPoint joinPoint, Object ret) throws Throwable {
+	System.out.println("HistoryAdvice : " + ret);
+}
 ```
 
-### Collection 계열 주입
-* ***\<constructor-arg> 또는 \<property>*** 의 하위태그로 *Collection* 값을 설정하는 태그를 이용하여 값 주입 설정
+1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드를 호출
+2. AOP 프록시는 실제 Bean 객체의 메소드를 호출 (정상 실행)
+3. AOP 프록시는 \<aop:after-returning> 에서 지정한 메소드를 호출
 
-|태그|Collection|설명|
-|----|----------|----|
-|**\<list>**|java.util.List|List 계열 컬렉션 값 목록 전달|
-|**\<set>**|java.util.Set|Set 계열 컬렉션 값 목록 전달|
-|**\<map>**|java.util.Map|Map 계열 컬렉션에 key-value 값 목록 전달|
-|**\<props>**|java.util.Properties|Properties 에 key(String)-value(String) 값 목록 전달|
+#### After Advice
+* **대상 객체의 메소드가 정상적으로 실행 되었는지 아니면 exception 을 발생 시켰는지의 여부와 상관 없이 메소드 실행 종료 후 공통 기능 적용**
+* **return type** : *void*
+* **parameter** : 없거나 ***JoinPoint***
 
-```xml
-<bean id="player" class="com.test.di.Player"/>
-<bean id="listdi" class="com.test.di.ListDi">
-	<property name="myList">
-		<!-- list or set -->
-		<list>
-			<!-- 기본적으로 String 으로 저장 -->
-			<value>20</value>
-			<!-- Integer 로 저장 -->
-			<value type="java.lang.Integer">20</value>
-			<ref bean="player"/>
-		</list>
-	</property>
-</bean>
+1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드 호출
+2. AOP 프록시는 실제 Bean 객체의 메소드 호출(정상 실행, exception 발생 : java 의 finally 와 같음)
+3. AOP 프록시는 \<aop:after> 에서 지정한 메소드를 호출
 
-<bean id="player" class="com.test.di.Player"/>
-<bean id="mapdi" class="com.test.di.MapDi">
-	<property name="myMap">
-		<map>
-			<entry key="username" value="john"/>
-			<entry key="py" value-ref="player"/>
-		</map>
-	</property>
-</bean>
+#### Around Advice
+* **위의 네가지 Advice 를 모두 구현하는 Advice**
+* **return type** : Object
+* **parameter** : ***org.aspectj.lang.ProceedingJoinPoint***
 
-<bean id="prordi" class="com.test.di.PropertiesDi"/>
-	<property name="dbInfo">
-		<props>
-			<prop key="driver">oracle.jdbc.driver.OracleDriver</prop>
-			<prop key="url">jdbcurl</prop>
-			<prop key="dbid">dbid</prop>
-			<prop key="dbpass">dbpass</prop>
-		</props>
-	</property>
-</bean>
-```
+1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드 호출
+2. AOP 프록시는 \<aop:around> 에서 지정한 메소드 호출
+3. AOP 프록시는 실제 Bean 객체의 메소드 호출
+4. AOP 프록시는 \<aop:around> 에서 지정한 메소드 호출
 
-### Annotation
-* 멤버변수에 직접 정의하는 경우 *Setter method* 를 만들지 않아도 됨
-* 특정 *Bean* 의 기능 수행을 위해 다른 *Bean* 을 참조해야 하는 경우 사용
+#### JoinPoint Class 구성 요소
+* 대상 객체에 대한 정보를 가지고 있는 객체로 Spring Container 로부터 받는다
+* *org.aspectj.lang*
+* 반드시 Aspect method 의 첫번째 인자로 와야한다
+
+|주요 Method|설명|
+|-----------|----|
+|**Object getTarget()**|대상 객체를 리턴|
+|**Object[] getArgs()**|파라미터로 넘겨진 값들을 배열로 리턴 (없으면 빈 배열)|
+|**Signature getSignature()**|호출되는 메소드의 정보 (Signature: 호출되는 메소드의 정보를 가진 객체)|
+|**String getName()**|메소드 이름|
+|**String toLongString()**|메소드 전체 syntax 를 리턴|
+|**String toShortString()**|메소드를 축약해서 리턴 (기본은 메소드 이름)|
+
+## Spring API 이용
+
+## Annotation 이용
+### @Aspect 를 이용하여 Aspect Class 에 직접 Advice 및 Pointcut 설정
+* @Aspect : Aspect Class 선언
+* @Before("pointcut")
+* @AfterReturning(pointcut="", returning="")
+* @AfterThrowing(pointcut="", throwing="")
+* @After("pointcut")
+* @Around("pointcut")
 <br/>
 
-* **@Resource**
-	* 특정 *Bean* 이 **JNDI 리소스 (datasource, java messaging service destination or environment entry)** 에 대한 Injection 을 필요로 하는 경우 사용
-	* 멤버 변수, setter method 에사용 가능
-	* *타입*에 맞춰서 연결
-	* 동일한 타입의 *Bean* 이 여러 개일 경우 **name** 을 통해 구분
-		* @Resource(name="name")
-* **@Autowired**
-	* *Spring* 에서만 사용 가능
-		* 정밀한 DI 가 필요한 경우 유용
-	* 멤버변수, setter, constructor, 일반 method 사용 가능
-	* *타입*에 맞춰서 연결
-	* 동일한 타입의 *Bean* 이 여러 개일 경우 **@Qualifier("name") 으로 식별
-* **@Inject**
-	* Framework 에 종속적이지 않음
-	* javax.inject-x.x.x.jar 필요
-	* 멤버변수, setter, constructor, 일반 method 사용 가능
-	* *이름*으로 연결
+* *Around* 를 제외한 나머지 메소드는 첫 인자로 ***JoinPoint*** 를 가질 수 있음
+* *Around* 는 ***ProceedingJoinPoint*** 를 인자로 가질 수 있음
 
-## 기타 설정
-### Bean 객체의 생성단위
-* ***BeanFactory*** 를 통해 *Bean* 을 요청 시 객체생성의 범위를 설정
-* ***\<bean>*** 의 scope 속성을 이용해 설정
-	* *singleton, prototype, request, session*
-		* *request 와 session* 은 WebApplicationContext 에서만 적용 가능
-
-### Factory Method 로부터 Bean 생성
-```xml
-<bean id="dbc" class="com.test.di.DBConnection" factory-method="getInstance"/>
+```java
+@Aspect
+public class PerformanceTraceAdvice() {
+	
+	@Pointcut("execution(public * com.test.spring.aop..*Controller.*(..))")
+	public void profileTarget() {}
+	
+	@Around("profileTarget()")
+	public Object trace(ProceedingJoinPoint joinPoint) throws Throwable {
+		String signature = joinPoint.getSignature().toShortString();
+		long start = System.currentTimeMillis();
+		try {
+			Object result = joinPoint.proceed();
+			return result;
+		} finally {
+			long finish = System.currentTimeMillis();
+			System.out.println("PerformanceTraceAdvice : " + signature + " 실행시간 - " + (finish - start) + "ms");
+		}
+	}
+}
 ```
+### 설정파일에 \<aop:aspectj-autoproxy/> 추가
+### Aspect Class 를 \<bean> 으로 등록
 
-## 스프링 빈의 생명 주기
-![image](https://user-images.githubusercontent.com/54715744/139454019-daa4b7b3-f760-4c0b-98a1-dd53bb08f9c9.png)
+```xml
+<context:component-scan base-package="com.test.aop" />
+	
+<aop:aspectj-autoproxy />
+```
