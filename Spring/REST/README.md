@@ -1,210 +1,323 @@
-# MyBatis
-* **Java Object 와 SQL 문 사이의 *자동 Mapping* 기능을 지원하는 *ORM Framework***
-* *SQL* 을 별도의 파일로 분리해서 관리
-* Hibernate 나 JPA(Java Persistence API) 처럼 새로운 DB 프로그래밍 패러다임을 익히지 않아도 됨
-* *개발자가 익숙한 SQL 을 그대로 사용하며 JDBC 코드 작성의 불편함을 제거하고, 도메인 객체나 VO 객체를 중심으로 개발 가능*
+# REST API
 
-#### 쉬운 접근성과 코드의 간결함
-* 가장 간단한 *persistence framework*
-* XML 형태로 서술된 JDBC 코드라 생각해도 될 만큼 *JDBC 의 모든 기능을 제공*
-* 복잡한 JDBC 코드를 걷어내며 깔끔한 코드 유지
-* 수동적인 parameter 설정과 Query 결과에 대한 mapping 구문을 제거
+#### OPEN API (Application Programming Interface)
+* 프로그래밍에서 사용할 수 있는 개방되어 있는 상태의 Interface
+* 대부분의 OPEN API 는 *REST 방식으로 지원*
 
-#### SQL 문과 프로그래밍 코드의 분리
-* SQL 에 변경이 있을 때 마다 자바 코드를 수정하거나 컴파일 하지않아도 됨
-* SQL 작성과 관리 또는 검토를 DBA 와 같은 개발자가 아닌 다른 사람에게 맡길 수 있음
+## REST (Representational State Transfer)
+* 하나의 URI 는 하나의 고유한 Resource 를 대표하도록 설계된다는 개념에 전송방식을 결합해 원하는 작업을 지정
+	* URI + *GET|POST|PUT|DELETE*
+* 웹의 장점을 최대한 활용할 수 있는 아키텍처
+* HTTP URI 를 통해 제어할 Resource 를 명시하고, HTTP Method(GET, POST, PUT, DELETE) 를 통해 해당 Resource 를 제어하는 명령을 내리는 방식의 아키텍처
 
-#### 다양한 프로그래밍 언어로 구현 가능
-* Java, C#, .NET, Ruby...
+## 구성
+* **자원 (Resource) - URI**
+* **행위 (Verb) - HTTP Method**
+* **표현 (Representations)**
+<br/>
 
----
+* 잘 표현된 HTTP URI 로 Resource 를 정의하고 HTTP Method 로 Resource 에 대한 행위를 정의
+* Resource 는 JSON, XML 과 같은 여러가지 언어로 표현할 수 있다
 
-# MyBatis-Spring
-## MyBatis 와 MyBatis-Spring 을 사용한 DB Access Architecture
-![image](https://user-images.githubusercontent.com/54715744/139578678-25951513-b0b5-44d3-99c7-bbfb43c5879e.png)
+## 기존 Service 와 REST Service
+### 기존 Service
+* 요청에 대한 처리를 한 후 가공된 data 를 이용하여 ***특정 플랫폼에 적합한 형태의 View*** 로 만들어서 반환
 
-## MyBatis 를 사용하는 Data Access Layer
-![image](https://user-images.githubusercontent.com/54715744/139578746-a3c547a6-530a-4f2d-bc14-d9f58c8d8aed.png)
+### REST Service
+* data 처리만 한다거나, 처리 후 반환될 data 가 있다면 ***JSON 이나 XML 형식***으로 전달
+* View 에 대해서는 신경 쓸 필요가 없다
+<br/>
 
-## MyBatis 3 의 주요 Component
-![image](https://user-images.githubusercontent.com/54715744/139578785-7d84fb17-3000-4ab9-a317-245adfb05c6d.png)
+* 기존의 전송방식과는 달리 서버는 요청으로 받은 리소스에 대해 *순수한 데이터를 전송*
+* 기존은 *GET/POST* 외에, *PUT/DELETE* 방식을 사용하여 리소스에 대한 CRUD 처리 가능
+* 정해진 표준이 없어 암묵적인 표준만 있다
+	* "-" 는 사용 가능하나 "\_" 는 사용하지 않음
+	* 특별한 경우를 제외하고 대문자 사용은 하지 않음 (대소문자를 구분한다)
+	* URI 마지막에 "/" 를 사용하지 않음
+	* "/" 로 계층 관계를 나타냄
+	* 확장자가 포함된 파일 이름을 직접 포함시키지 않음
+	* URI 는 명사를 이용
 
-* **MyBatis 설정파일** (sqlMapConfig.xml)
-	* 데이터베이스의 접속 주소 정보나 객체의 alias, Mapping 파일의 경로 등의 고정된 환경 정보를 설정
-* **SqlSessionFactoryBuilder**
-	* MyBatis 설정파일을 바탕으로 SqlSessionFactory 생성
-* **SqlSessionFactory**
-	* SqlSession 생성
-* **SqlSession**
-	* 핵심적인 역할을 하는 Class 로 SQL 실행이나 Transaction 관리 실행
-	* SqlSession 오브젝트는 Tread-Safe 하지 않으므로 thread 마다 필요에 따라 생성
-* **mapping 파일** (member.xml)
-	* SQL 문과 ORMapping 설정
+### 웹 접근 방식
+|작업|기존 방식|REST 방식|ex|
+|----|---------|---------|--|
+|**Create**(Insert)|**POST**  /write.do?id=troment|**POST**  /blog/troment|글쓰기|
+|**Read**(Select)|**GET**  /view.do?id=troment&articleno=25|**GET**  /blog/troment/25|글읽기|
+|**Update**(Update)|**POST**  /modify.do?id=troment|**PUT**  /blog/troment|글수정|
+|**Delete**(Delete)|**GET**  /delete.do?id=troment&articleno=25|**DELETE**  /blog/troment/25|글삭제|
 
-## MyBatis-Spring 의 주요 Component
-![image](https://user-images.githubusercontent.com/54715744/139579506-acb61a41-e5d4-43e8-a137-f25928dd7c23.png)
+* 기존의 블로그 등은 GET 과 POST 만으로 자원에 대한 CRUD 를 처리하며, URI 는 액션을 나타냄
+* REST 로 변경할 경우 4가지 method 를 모두 사용하여 CRUD 를 처리하며, URI 는 제어하려는 자원을 나타냄
 
-* **MyBatis 설정파일** (sqlMapConfig.xml)
-	* Dto 객체 정보를 설정 (alias)
-* **SqlSessionFactoryBean**
-	* MyBatis 설정파일을 바탕으로 SqlSessionFactory 생성
-	* Spring Bean 으로 등록해야함
-* **SqlSessionTemplate**
-	* 핵심적인 역할을 하는 Class 로 SQL 실행이나 Transaction 관리 실행
-	* SqlSession Interface 를 구현하며, Thread-Safe 하다
-	* Spring Bean 으로 등록해야함
-* **mapping 파일** (member.xml)
-	* SQL 문과 ORMapping 설정
-* **Spring Bean 설정파일** (beans.xml)
-	* SqlSessionFactoryBean 을 Bean 에 등록할 때 DataSource 정보와 MyBatis Config 파일 정보, Mapping 파일 정보를 함께 설정
-	* SqlSessionTemplate 을 Bean 으로 등록
+## REST API 설정
+### Jackson Library
+* ***jackson-databing*** 라이브러리는 ***객체를 JSON 포맷의 문자열로 변환시켜 브라우저로 전송***
+* ***jackson-dataformat-xml*** 라이브러리는 ***객체를 xml 로 브라우저로 전송***
+* *pom.xml* 에 library 추가
 
-## Mapper Interface
-* Mapping 파일에 기재된 SQL 을 호출하기 위한 Interface
-* SQL 을 호출하는 프로그램을 Type Safe 하게 기술
-* Mapping 파일에 있는 SQL 을 Java Interface 를 통해 호출할 수 있게 해줌
+### Annotation
+* **@RestController**
+	* Controller 가 REST 방식을 처리하기 위한 것임을 명시
+* **@ResponseBody**
+	* JSP 같은 View 로 전달되는 것이 아니라 데이터 자체를 전달
+* **@PathVariable**
+	* URL 경로에 있는 값을 파라미터로 추출
+* **@CrossOrigin**
+	* Ajax 의 크로스 도메인 문제를 해결
+* **@RequestBody**
+	* JSON 데이터를 원하는 타입으로 바인딩
 
-### Mapper Interface 를 사용하지 않을 경우
-* SQL 을 호출하는 프로그램은 SqlSession 의 method 의 argument 에 문자열로 **namespace + "." + SQL ID** 로 지정
-* 오타에 의한 버그 가능성, IDE 에서 제공하는 code assist 를 사용할 수 없음
-* session.selectOne("com.test.MemberDao.search", userid);
-
-### Mapper Interface 를 사용할 경우
-* UserMapper Interface 는 개발자가 작성
-* **packagename + "." + InterfaceNmae + "." + methodName** 이 **namespace + "." + SQL ID** 가 되도록 설정
-* namespace 속성에는 package 를 포함한 Mapper Interface 이름을 작성
-* SQL ID 에는 mapping 하는 method 의 이름을 지정
-* userMapper.search(userid);
-
-## MyBatis 와 Spring 연동
-* MyBatis 를 Standalone 형태로 사용하는 경우, SqlSessionFactory 객체를 직접 사용
-* *Spring 을 사용하는 경우*, 스프링 컨테이너에 MyBatis 관련 Bean 을 등록하여 사용
-	* 제공하는 트랜잭션 기능을 사용하면 손쉽게 트랜잭션 처리 가능
-	* MyBatis 에서 제공하는 Spring 연동 라이브러리가 필요
-
-```xml
-<dependency>
-	<groupId>org.mybatis</groupId>
-	<artifactId>mybatis-spring</artifactId>
-	<version>2.0.3</version>
-</dependency>
-```
-
-### DataSource 설정
-* Spring 을 사용하는 경우, Spring 에서 DataSource 를 관리하므로 MyBatis 설정파일에서는 일부 설정을 생략
-* Spring 환경설정 파일(application-context.xml) 에 DataSource 를 설정
-	* dataSource 아이디를 가진 Bean 으로 데이터베이스 연결정보를 가진 객체
-* 데이터베이스 설정과 트랜잭션 처리는 Spring 에서 관리
-
-#### 일반 설정
-```xml
-<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
-	<property name="driverClass" value="com.mysql.cj.jdbc.Driver"/>
-	<property name="url" value="jdbc:mysql://127.0.0.1:3306/ssafyweb?serverTimezone=UTC&amp;useUniCode=yes&amp;characterEncoding=UTF-8"/>
-	<property name="username" value="ssafy"/>
-	<property name="password" value="ssafy"/>
-</bean>
-```
-
-#### ConnectionPoll 설정
-```xml
-<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-	<property name="jndiName" value="java:comp/env/jdbc/ssafy"></property>
-</bean>
-```
-
-### 트랜잭션 관리자 설정
-* *transactionManager* 아이디를 가진 Bean 은 트랜잭션을 관리하는 객체
-* MyBatis 는 JDBC 를 그대로 사용하기 때문에 DataSourceTransactionManager 타입의 Bean 을 사용
-* *tx:annotation-driven* 요소는 트랜잭션 관리방법을 Annotation 으로 선언하도록 설정
-* Spring 은 메소드나 클래스에 **@Transactional** 이 선언되어 있으면, AOP 를 통해 트랜잭션 처리
-
-#### 트랜잭션 관리자 설정
-```xml
-<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-	<property name="dataSource" ref="ds"/>
-</bean>
-```
-
-#### Annotation 기반 트랜잭션 설정
-```xml
-<tx:annotation-driven />
-<!-- or -->
-<tx:annotation-driven transaction-manager="transactionManager"/>
-```
-
-### SqlSessionFactoryBean 설정
-* MyBatis 애플리케이션은 SqlSessionFactory 중심으로 수행
-* Spring 에서 SqlSessionFactory 객체를 생성하기 위해서는 SqlSessionFactoryBean 을 Bean 으로 등록해야 함
-	* 사용할 DataSource 와 MyBatis 설정파일 정보가 필요
-
-#### 직접 설정
-```xml
-<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
-	<property name="dataSource" ref="ds"></property>
-	<property name="configLocation" value="classpath:mybatis-config.xml"></property>
-	<property name="mapperLocations">
-		<list>
-			<value>classpath:mapper/guestbook.xml</value>
-			<value>classpath:mapper/member.xml</value>
-		</list>
-	</property>
-</bean>
-```
-
-#### MyBatis Config 파일을 사용하지 않고 자동 설정
-```xml
-<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-	<property name="dataSource" ref="ds"/>
-	<property name="typeAliasesPackage" value="com.mvc.vo"/>
-	<property name="mapperLocations" value="classpath*:mapper/**/*.xml"></property>	
-</bean>
-```
-
-### Mapper Bean 등록
-* Mapper Interface 를 사용하기 위해 *Scanner 를 사용하여 자동으로 등록하거나, 직접 등록*
-* *mapperScannerConfigurer* 을 설정하면, Mapper Interface 를 자동으로 검색하여 Bean 으로 등록
-	* *basePackage* 로 패키지로 설정하면, 해당 패키지 하위의 모든 Mapper Interface 가 등록
-* *MapperFactoryBean class* 는 직접 등록할 때 사용
-
-#### Mapper Scanner 사용
-```xml
-<!-- MapperScannerConfigurer:java mapper를 해당 패키지에서 찾아서 proxy 객체를 생성한 후 ServiceImpl에 주입시킴 -->
-<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-	<property name="basePackage" value="com.mvc.mapper"/>
-</bean>
-```
-
-#### 직접 등록
-```xml
-<bean id="authorMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
-	<property name="mapperInterface" value="com.mvc.mapper.AuthorMapper" />
-	<property name="sqlSessionFactory" ref="sqlSessionFactory" />
-</bean>
-```
-
-### MyBatis Configuration 설정
-* Spring 을 사용하면 DB 접속정보 및 Mapper 관련 설정은 Spring Bean 으로 등록하여 관리
-* MyBatis 환경설정 파일에는 Spring 에서 관리하지 않는 일부 정보만 설정
-	* typeAlias, typeHandler 등
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-config.dtd">
-
-<configuration>
+## index.jsp
+```jsp
+<script type="text/javascript">
+	$(document).ready(function(){
+		customerList(); // 서버로부터 모든 고객 정보 받아오는 함수
+		
+		customerSelect(); // 한사람 선택시 정보 받아올 이벤트 등록
+		customerDelete(); // 삭제버튼 클릭시 이벤트 등록
+		customerUpdate(); // 수정버튼 클릭시 이벤트 등록
+		customerInsert(); // 추가버튼 클릭시 이벤트 등록
+		customerSearch();
+		customerAll();
+		init(); // 입력칸 지우는 이벤트 등록
+	});
 	
-	<typeAliases>
-		<typeAlias type="com.ssafy.guestbook.model.MemberDto" alias="member"/>
-		<typeAlias type="com.ssafy.guestbook.model.GuestBookDto" alias="guestbook"/>
-		<typeAlias type="com.ssafy.guestbook.model.FileInfoDto" alias="fileinfo"/>
-	</typeAliases>
+	function customerList(){
+		// 서버로 ajax 요청 보내서 데이터 받아오기
+		$.ajax({
+			url: 'http://localhost:8080/rest/customers',
+			type: 'get',
+			dataType: 'json', // 서버가 보내주는 데이터 타입
+			success: function(result){
+				customerListResult(result);
+			},
+			error: function(xhr, status, msg){
+				alert("상태값: " + status + " 에러메시지: " + msg);
+			}
+		});
+	}
 	
-</configuration>
+	function customerSelect(){
+		// tr 클릭시 선택정보가 위쪽의 text칸에 들어가도록 처리
+		$('body').on('click', 'tr', function(){
+			var num = $(this).find('#hidden_num').val();
+			$.ajax({
+				url: 'customers/' + num,
+				type: 'get',
+				dataType: 'json',
+				success: customerSelectResult
+			})
+		})
+	}
+	function customerDelete(){
+		$('#btnDelete').on('click', function(){
+			var num = $('#num').val();
+			if (num != "") {
+				$.ajax({
+					url: 'customers/' + num,
+					type: 'delete',
+					dataType: 'json',
+					success: function() {
+						clear();
+						customerList(); // 화면 리프레쉬
+					}
+				})
+			} else {
+				alert("삭제할 정보를 입력해 주세요!");
+			}
+		})
+	}
+	
+	function customerUpdate(){
+		$('#btnUpdate').on('click', function() {
+			var num = $('#num').val();
+			var address = $('#address').val();
+	
+			if (num != "" && address != "") {
+				$.ajax({
+					url: 'customers',
+					type: 'put',
+					data: JSON.stringify({ // json 객체를 문자열 형식으로
+						num: num,
+						address: address
+					}),
+					contentType: 'application/json', // 서버로 보내는 데이터 형식
+					success: function() {
+						clear();
+						customerList();
+					}
+				})
+			} else {
+				alert("수정할 정보를 입력해 주세요!");
+			}
+		})
+	}
+	
+	function customerInsert(){
+		$('#btnInsert').on('click', function() {
+			// 1. 입력값 알아오기
+			var num = $('#num').val();
+			var name = $('#name').val();
+			var address = $('#address').val();
+			
+			if (num != "" && name != "" && address !="") {
+			// 2. ajax 요청
+				$.ajax({
+					url: 'customers',
+					type: 'post',
+					data: JSON.stringify({ // json 객체를 문자열 형식으로
+						num: num,
+						name: name,
+						address: address
+					}),
+					contentType: 'application/json', // 서버로 보내는 데이터 형식
+					success: function() {
+						clear();
+						customerList();
+					}
+				})
+			} else {
+				alert("추가할 정보를 입력해 주세요!");
+			}
+		})
+	}
+	
+	function customerSearch(){
+		$('#btnSearch').on('click', function() {
+			var address = $('#address').val();
+			
+			if (address != "") {
+				$.ajax({
+					url: 'customers/find/' + address,
+					type: 'get',
+					dataType: 'json',
+					success: function(result) {
+						clear();
+						customerListResult(result);
+					}
+				})
+			} else {
+				alert("검색할 정보를 입력해 주세요!")
+			}
+		})
+	}
+	
+	function customerAll(){
+		$('#btnAll').on('click', function() {
+			$.ajax({
+				url: 'http://localhost:8080/rest/customers',
+				type: 'get',
+				dataType: 'json', // 서버가 보내주는 데이터 타입
+				success: function(result){
+					customerListResult(result);
+				},
+				error: function(xhr, status, msg){
+					alert("상태값: " + status + " 에러메시지: " + msg);
+				}
+			});
+		})
+	}
+	
+	function init(){
+		$('#btnInit').click(function(){
+			$('#num').val('');
+			$('#name').val('');
+			$('#address').val('');
+		})
+	}
+	
+	// 서버에서 받은 결과를 테이블에 넣어 보여주는 함수
+	function customerListResult(result) {
+		$('tbody').empty();
+		$.each(result, function(index, item){
+			// $('<tr>') : tr 태그를 하나 생성 <tr><td>num</td><td>name</td><td>address</td></tr>
+			$('<tr>')
+			.append($('<td>').text(item.num))
+			.append($('<td>').text(item.name))
+			.append($('<td>').text(item.address))
+			.append($('<input type="hidden" id="hidden_num">').val(item.num))
+			.appendTo('tbody');
+		})
+		
+	}
+	
+	function customerSelectResult(result) {
+		$('#num').val(result.num);
+		$('#name').val(result.name);
+		$('#address').val(result.address);
+	}
+	
+	function clear(){
+		$('#num').val('');
+		$('#name').val('');
+		$('#address').val('');
+	
+	}
+</script>
 ```
 
-### 데이터 접근 객체 구현
-* 데이터 접근 객체는 특정한 기술을 사용하여 데이터 저장소에 접근하는 방식을 구현한 객체
-* **@Repository** 는 데이터 접근 객체를 Bean 에 등록하기 위해 사용하는 Spring 에서 제공하는 Annotation
-* **@Autowired** 를 통해, 사용하려는 Mapper Interface 를 데이터 접근 객체와 의존관계를 설정
+## RestController
+```java
+//@RestController: @Controller + @ResponseBody (java->json 으로 변환해줌)
+//@CrossOrigin: 다른 origin 에서 요청이 와도 서비스 해주겠다
+//@CrossOrigin(origins = {"http://127.0.0.1:8080", "http://127.0.0.1:9090"})
+@CrossOrigin("*")
+@RestController
+public class CustomerRestController {
+	
+	@Autowired
+	CustomerService service;
+	
+	//Get:http://localhost:8080/rest/customers,  모든데이터
+	@GetMapping(value="/customers")
+	public List<Customer> selectAll(){		
+		return service.selectAll();
+	}
+	
+	
+	//get:http://localhost:8080/rest/customers/1 ,  한개 데이터	
+	@GetMapping(value="/customers/{num}")
+	public Customer selectOne(@PathVariable String num) {
+		return service.selectOne(num);
+	}
+	
+	
+	//post:http://localhost:8080/rest/customers ,  데이터 추가	
+	@PostMapping(value="/customers")
+	public Map<String, String> insert(@RequestBody Customer c) { //@RequestBody: json -> java
+		service.insert(c);
+		
+		Map<String, String> map = new HashMap<>();
+		map.put("result", "추가 성공!");
+		return map;
+	}
+	
+	//put:http://localhost:8080/rest/customers ,  데이터 수정	
+	@PutMapping(value="/customers")
+	public Map<String, String> update(@RequestBody Customer c) { //@RequestBody: json -> java
+		service.update(c);
+		
+		Map<String, String> map = new HashMap<>();
+		map.put("result", "수정 성공!");
+		return map;
+	}
+	
+	//delete:http://localhost:8080/rest/customers/1 ,  한개 데이터 삭제
+	@DeleteMapping(value="customers/{num}")
+	public Map<String, String> delete(@PathVariable String num) {
+		service.delete(num);
+		
+		Map<String, String> map = new HashMap<>();
+		map.put("result", "삭제 성공!");
+		return map;
+	}
+	
+	//get:http://localhost:8080/rest/customers/find/la, 검색
+	@GetMapping(value="/customers/find/{address}")
+	public List<Customer> search(@PathVariable String address) {
+		return service.findByAddress(address);
+	}
+	
+
+}
+```
