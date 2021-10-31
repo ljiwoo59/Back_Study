@@ -1,295 +1,210 @@
-# Aspect Oriented Programming
-![image](https://user-images.githubusercontent.com/54715744/139575312-0f81c994-9e80-4f05-961a-30764ab6b725.png)
+# MyBatis
+* **Java Object 와 SQL 문 사이의 *자동 Mapping* 기능을 지원하는 *ORM Framework***
+* *SQL* 을 별도의 파일로 분리해서 관리
+* Hibernate 나 JPA(Java Persistence API) 처럼 새로운 DB 프로그래밍 패러다임을 익히지 않아도 됨
+* *개발자가 익숙한 SQL 을 그대로 사용하며 JDBC 코드 작성의 불편함을 제거하고, 도메인 객체나 VO 객체를 중심으로 개발 가능*
 
+#### 쉬운 접근성과 코드의 간결함
+* 가장 간단한 *persistence framework*
+* XML 형태로 서술된 JDBC 코드라 생각해도 될 만큼 *JDBC 의 모든 기능을 제공*
+* 복잡한 JDBC 코드를 걷어내며 깔끔한 코드 유지
+* 수동적인 parameter 설정과 Query 결과에 대한 mapping 구문을 제거
 
-* **핵심 관심 사항(core concern)** 과 **공통 관심 사항(cross-cutting concern)** 을 기준으로 프로그래밍함으로서 공통 모듈을 손쉽게 적용
-* 핵심적인 기능에서 부가적인 기능을 분리하고, 분리한 부가기능을 ***Aspect*** 라는 모듈 형태로 만들어 설계하고 개발하는 방법
-* 핵심기능을 설계하고 구현할 때 *객체지향*적인 가치를 지킬 수 있도록 도와주는 개념
+#### SQL 문과 프로그래밍 코드의 분리
+* SQL 에 변경이 있을 때 마다 자바 코드를 수정하거나 컴파일 하지않아도 됨
+* SQL 작성과 관리 또는 검토를 DBA 와 같은 개발자가 아닌 다른 사람에게 맡길 수 있음
 
-#### 적용 예
-* **간단한 메소드의 성능 검사**
-	* 개발 도중 DB 에 데이터를 넣고 빼는 등의 배치 작업에 대하여 시간을 측정하고 쿼리를 개선 할 때
-	* 해당 메소드의 처음과 끝에 System.currentTimeMillis() 또는 스프링의 StopWatch 코드를 사용하기는 번거로움
-	* 해당 작업을 하는 코드를 *밖에서 설정*하고 해당 부분을 사용하는것이 편리
-* **트랜잭션 처리**
-	* 트랜잭션의 경우, 비즈니스 로직의 전후에 설정
-	* 매번 사용하는 트랜잭션 코드는 번거롭고 복잡함
-* **예외 반환**
-	* 스프링에는 *DataAccessException* 이라는 예외 계층 구조가 있음
-	* ***Aspect*** 는 본인의 프레임워크나 애플리케이션에서 별도의 예외 계층 구조로 변환하고 싶을 때 유용
-* **아키텍처 검증**
-* **기타**
-	* *Hibernate* 와 *JDBC* 를 같이 사용할 경우, DB 동기화 문제 해결
-	* 멀티스레드 safety 관련하여 작업하는 경우, 메소드들에 일괄적으로 락을 설정하는 Aspect
-	* 데드락 등으로 인한 *PessimisticLockingFailureException* 등의 예외를 만났을 때 재시도하는 Aspect
-	* 로깅, 인증, 권한 등
-
-## AOP 구조
-* *핵심 관심 사항*에 *공통 관심 사항*을 어떻게 적용시킬 것인가가 관건
-
-#### 예시
-* *핵심 관심 사항* : BankingService, AccountService, CustomerService
-* *공통 관심 사항* : Security, Transaction, Other...
-
-## AOP 용어
-### Target
-* **핵심 기능을 담고 있는 모듈**로 ***부가기능을 부여할 대상***이 됨
-
-### Advice
-* **어느 시점(수행 전/후, 예외 발생 후 등..) 에 어떤 공통 관심 기능(*Aspect*) 을 적용할지 정의**
-* ***Target에 제공할 부가기능을 담고 있는 모듈***
-
-### JoinPoint
-* ***Aspect* 가 적용 될 수 있는 지점(method, field)**
-* ***Target 객체가 구현한 인터페이스의 모든 method***는 **JoinPoint**
-
-### Pointcut
-* **공통 관심 사항이 적용될 *JoinPoint***
-* ***Advice 를 적용할 Target 의 method 를 선별하는 정규 표현식***
-* *execution* 으로 시작하고 method 의 *Signature* 를 비교하는 방법을 주로 이용
-
-|Pointcut|선택된 JoinPoint|
-|--------|----------------|
-|**execution(public \* \*(..))**|public 메소드 실행|
-|**execution(\* set\*(..))**|이름이 set 으로 시작하는 모든 메소드 실행|
-|**execution(\* com.test.serviceAccountService.\*(..))**|AccountService 인터페이스의 모든 메소드 실행|
-|**execution(\* com.test.service.\*.\*(..))**|service 패키지의 모든 메소드 실행|
-|**execution(\* com.test.service..\*.\*(..))**|service 패키지와 하위 패키지의 모든 메소드 실행|
-|**within(com.test.service.\*)**|service 패키지 내의 모든 결합점|
-|**within(com.test.service..\*)**|service 패키지 및 하위 패키지의 모든 결합점|
-|**this(com.test.service.AccountService)**|AccountService 인터페이스를 구현하는 프록시 개체의 모든 결합점|
-|**target(com.test.service.AccountService)**|AccountService 인터페이스를 구현하는 대상 객체의 모든 결합점|
-|**args(java.io.Serializable)**|하나의 파라미터를 갖고 전달된 인자가 Serializable 인 모든 결합점|
-|**@target(org.springframework.transaction.annotation.Transactional)**|대상 객체가 @Transactional 을 갖는 모든 결합점|
-|**@within(org.springframework.transaction.annotation.Transactional)**|대상 객체의 선언 타입이 @Transactional 을 갖는 모든 결합점|
-|**@annotation(org.springframework.transaction.annotation.Transactional)**|실행 메소드가 @Transactional 을 갖는 모든 결합점|
-|**@args(com.test.security.Classified)**|단일 파라미터를 받고, 전달된 인자 타입이 @Classified 를 갖는 모든 결합점|
-|**bean(accountRepository)**|accountRepository 빈|
-|**!bean(accountRepository)**|accountRepository 빈을 제외한 모든 빈|
-|**bean(\*)**|모든 빈|
-|**bean(account\*)**|이름이 account 로 시작되는 모든 빈|
-|**bean(\*Repository)**|이름이 Repository 로 끝나는 모든 빈|
-|**bean(accounting/\*)**|이름이 accounting/ 으로 시작하는 모든 빈|
-|**bean(\*dataSource)\|\|bean(\*DataSource)**|이름이 dataSource 나 DataSource 로 끝나는 모든 빈|
-
-### Aspect
-* **여러 객체에서 공통으로 적용되는 공통 관심 사항(transaction, logging, security...)**
-* ***AOP 의 기본 모듈***
-* ***Aspect = Advice + Pointcut***
-* **Singleton 형태의 객체**
-
-### Advisor
-* ***Advisor = Advice + Pointcut***
-* Spring AOP 에서만 사용되는 용어
-
-### Weaving
-* **어떤 *Advice* 를 어떤 *Pointcut(핵심사항)* 에 적용시킬 것인지에 대한 설정(*Advisor*)**
-* ***Pointcut 에 의해서 결정된 Target 의 JoinPoint 에 부가기능(Advice) 를 삽입하는 과정***
-* AOP 의 핵심기능(*Target*) 의 코드에 영향을 주지 않으면서 필요한 부가기능(*Advice*) 을 추가할 수 있도록 해주는 핵심적인 처리과정
+#### 다양한 프로그래밍 언어로 구현 가능
+* Java, C#, .NET, Ruby...
 
 ---
 
-# Spring AOP
-### Proxy 기반 AOP 지원
-* ***Target 객체***에 대한 **Proxy** 를 만들어 제공
-	* 실행시간에 생성
-	* **Proxy** 는 ***Advice 를 Target 객체에 적용하면서 생성되는 객체***
+# MyBatis-Spring
+## MyBatis 와 MyBatis-Spring 을 사용한 DB Access Architecture
+![image](https://user-images.githubusercontent.com/54715744/139578678-25951513-b0b5-44d3-99c7-bbfb43c5879e.png)
 
-### Proxy 가 호출을 가로챈다 (Intercept)
-* **전처리 Advice** : ***Target***에 대한 호출을 가로챈 다음 ***Advice 의 부가기능 로직을 수행하고 난 후에 Target 의 핵심 기능 로직을 호출***
-* **후처리 Advice** : ***Target 의 핵심 기능 로직을 호출한 후에 Advice 의 부가기능을 수행***
+## MyBatis 를 사용하는 Data Access Layer
+![image](https://user-images.githubusercontent.com/54715744/139578746-a3c547a6-530a-4f2d-bc14-d9f58c8d8aed.png)
 
-### 메소드 JoinPoint 만 지원
-* **동적 Proxy** 기반으로 AOP 를 구현하므로 **method JoinPoint** 만 지원
-* **핵심기능(*Target*) 의 method 가 호출되는 런타임 시점에만 부가기능(*Advice*) 를 적용할 수 있음**
-* AspectJ 같은 고급 AOP framework 이용 시, 객체의 생성, 필드값의 조회와 조작, static method 호출 및 초기화 등의 다양한 작업에 부가기능 적용 가능
+## MyBatis 3 의 주요 Component
+![image](https://user-images.githubusercontent.com/54715744/139578785-7d84fb17-3000-4ab9-a317-245adfb05c6d.png)
 
-# Spring AOP 구현 방법
-## POJO Class 이용
-### XML Schema 확장 기법을 통해 설정파일 작성
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
-	
-	<bean id="logging" class="com.test.aop.LoggingTest"/>
-	
-	<aop:config>
-		<aop:aspect id="logAspect" ref="logging">
-			<aop:pointcut id="logmethod" expression="execution(public * com.test.aop..*(..))"/>
-			<aop:around pointcut-ref="logmethod" method="pringlog"/>
-		</aop:aspect>
-	</aop:config>
-	
-</beans>
-```
+* **MyBatis 설정파일** (sqlMapConfig.xml)
+	* 데이터베이스의 접속 주소 정보나 객체의 alias, Mapping 파일의 경로 등의 고정된 환경 정보를 설정
+* **SqlSessionFactoryBuilder**
+	* MyBatis 설정파일을 바탕으로 SqlSessionFactory 생성
+* **SqlSessionFactory**
+	* SqlSession 생성
+* **SqlSession**
+	* 핵심적인 역할을 하는 Class 로 SQL 실행이나 Transaction 관리 실행
+	* SqlSession 오브젝트는 Tread-Safe 하지 않으므로 thread 마다 필요에 따라 생성
+* **mapping 파일** (member.xml)
+	* SQL 문과 ORMapping 설정
 
-* aop namespace 와 XML Schema 추가
-* aop namespace 를 이용한 설정
-* **\<aop:aspect> 설정**
-	* ***한 개의 Aspect(공통 관심 기능) 설정***
-	* *ref* 속성을 통해 공통 기능을 가지고 있는 *bean* 을 연결
-	* *id* 는 태그의 식별자 설정
-	* 자식 태그로 *\<aop:pointcut>, advice* 관련 태그가 올 수 있다
-* **\<aop:pointcut> 설정**
-	* ***Pointcut(공통 기능이 적용될 곳) 을 지정***
-	* *\<aop:config> 나 \<aop:aspect> 의 자식 태그*
-		* \<aop:config> 전역적으로 사용
-		* \<aop:aspect> 내부에서 사용
-	* *AspectJ 표현식*을 통해 pointcut 지정
-	* *id* 는 advice 태그의 식별자
-	* *expression* 은 pointcut 지정
+## MyBatis-Spring 의 주요 Component
+![image](https://user-images.githubusercontent.com/54715744/139579506-acb61a41-e5d4-43e8-a137-f25928dd7c23.png)
 
-#### AOP 설정 태그
-|Tag|설명|
-|---|----|
-|**\<aop:config>**|aop 설정의 root 태그 (weaving 들의 묶음)|
-|**\<aop:aspect>**|Aspect 설정 (하나의 weaving 에 대한 설정)|
-|**\<aop:pointcut>**|Pointcut 설정|
+* **MyBatis 설정파일** (sqlMapConfig.xml)
+	* Dto 객체 정보를 설정 (alias)
+* **SqlSessionFactoryBean**
+	* MyBatis 설정파일을 바탕으로 SqlSessionFactory 생성
+	* Spring Bean 으로 등록해야함
+* **SqlSessionTemplate**
+	* 핵심적인 역할을 하는 Class 로 SQL 실행이나 Transaction 관리 실행
+	* SqlSession Interface 를 구현하며, Thread-Safe 하다
+	* Spring Bean 으로 등록해야함
+* **mapping 파일** (member.xml)
+	* SQL 문과 ORMapping 설정
+* **Spring Bean 설정파일** (beans.xml)
+	* SqlSessionFactoryBean 을 Bean 에 등록할 때 DataSource 정보와 MyBatis Config 파일 정보, Mapping 파일 정보를 함께 설정
+	* SqlSessionTemplate 을 Bean 으로 등록
 
-#### Advice 설정 태그
-|Tag|설명|
-|---|----|
-|**\<aop:before>**|method 실행 전 실행될 Advice|
-|**\<aop:after-returning>**|method 가 정상 실행 후 실행될 Advice|
-|**\<aop:after-throwing>**|method 에서 예외 발생시 실행될 Advice (catch block)|
-|**\<aop:after>**|method 가 정상 또는 예외 발생에 상관없이 실행될 Advice (finally block)|
-|**\<aop:around>**|모든 시점(실행 전, 후) 에서 적용시킬 수 있는 Advice|
+## Mapper Interface
+* Mapping 파일에 기재된 SQL 을 호출하기 위한 Interface
+* SQL 을 호출하는 프로그램을 Type Safe 하게 기술
+* Mapping 파일에 있는 SQL 을 Java Interface 를 통해 호출할 수 있게 해줌
 
-### POJO 기반 Advice Class 작성
-* 설정 파일의 *Advice* 관련 태그에 맞게 작성
-* \<bean> 으로 등록하며 \<aop:aspect> 의 *ref* 속성으로 참조
-* 공통 기능 메소드 : Advice 관련 태그들의 method 속성의 값이 method 의 이름이 된다
+### Mapper Interface 를 사용하지 않을 경우
+* SQL 을 호출하는 프로그램은 SqlSession 의 method 의 argument 에 문자열로 **namespace + "." + SQL ID** 로 지정
+* 오타에 의한 버그 가능성, IDE 에서 제공하는 code assist 를 사용할 수 없음
+* session.selectOne("com.test.MemberDao.search", userid);
 
-#### Before Advice
-* **대상 객체의 메소드가 실행되기 전에 실행됨**
-* **return type** : 리턴 값을 갖더라도 실제 Advice 의 적용과정에서 사용되지 않기 때문에 ***void*** 를 쓴다
-* **parameter** : 없거나 대상객체 및 호출되는 메소드에 대한 정보 또는 파라미터에 대한 정보가 필요하다면 ***JoinPoint*** 에 전달
+### Mapper Interface 를 사용할 경우
+* UserMapper Interface 는 개발자가 작성
+* **packagename + "." + InterfaceNmae + "." + methodName** 이 **namespace + "." + SQL ID** 가 되도록 설정
+* namespace 속성에는 package 를 포함한 Mapper Interface 이름을 작성
+* SQL ID 에는 mapping 하는 method 의 이름을 지정
+* userMapper.search(userid);
+
+## MyBatis 와 Spring 연동
+* MyBatis 를 Standalone 형태로 사용하는 경우, SqlSessionFactory 객체를 직접 사용
+* *Spring 을 사용하는 경우*, 스프링 컨테이너에 MyBatis 관련 Bean 을 등록하여 사용
+	* 제공하는 트랜잭션 기능을 사용하면 손쉽게 트랜잭션 처리 가능
+	* MyBatis 에서 제공하는 Spring 연동 라이브러리가 필요
 
 ```xml
-<aop:config>
-	<aop:aspect id="beforeAspect" ref="userCheckAdvice">
-		<aop:pointcut id="publicMethod" expression="execution(public * com.test.spring.aop..*Controller.*(..))"/>
-		<aop:before method="before" pointcut-ref="publicMethod"/>
-	</aop:aspect>
-</aop:config>
+<dependency>
+	<groupId>org.mybatis</groupId>
+	<artifactId>mybatis-spring</artifactId>
+	<version>2.0.3</version>
+</dependency>
 ```
 
-```java
-public void before(JoinPoint joinPoint) {
-	String name = joinPoint.getSignature().toShortString();
-	System.out.println("Advice : " + name);
-}
+### DataSource 설정
+* Spring 을 사용하는 경우, Spring 에서 DataSource 를 관리하므로 MyBatis 설정파일에서는 일부 설정을 생략
+* Spring 환경설정 파일(application-context.xml) 에 DataSource 를 설정
+	* dataSource 아이디를 가진 Bean 으로 데이터베이스 연결정보를 가진 객체
+* 데이터베이스 설정과 트랜잭션 처리는 Spring 에서 관리
+
+#### 일반 설정
+```xml
+<bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+	<property name="driverClass" value="com.mysql.cj.jdbc.Driver"/>
+	<property name="url" value="jdbc:mysql://127.0.0.1:3306/ssafyweb?serverTimezone=UTC&amp;useUniCode=yes&amp;characterEncoding=UTF-8"/>
+	<property name="username" value="ssafy"/>
+	<property name="password" value="ssafy"/>
+</bean>
 ```
 
-1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드를 호출
-2. AOP 프록시는 \<aop:before> 에서 지정한 메소드를 호출
-	* 메소드에서 exception 을 발생시킬 경우 대상 객체의 메소드가 호출 되지 않음
-3. AOP 프록시는 Aspect 기능 실행 후 실제 Bean 객체의 메소드를 호출 
+#### ConnectionPoll 설정
+```xml
+<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+	<property name="jndiName" value="java:comp/env/jdbc/ssafy"></property>
+</bean>
+```
 
-#### After Returning Advice
-* **대상 객체의 메소드 실행이 정상적으로 끝난뒤 실행됨**
-* **return type** : ***void***
-* **parameter** : 없거나 ***JoinPoint*** 또는 ***메소드에서 반환되는 특정 객체 타입***
-	* JoinPoint 는 항상 첫번째로 온다
+### 트랜잭션 관리자 설정
+* *transactionManager* 아이디를 가진 Bean 은 트랜잭션을 관리하는 객체
+* MyBatis 는 JDBC 를 그대로 사용하기 때문에 DataSourceTransactionManager 타입의 Bean 을 사용
+* *tx:annotation-driven* 요소는 트랜잭션 관리방법을 Annotation 으로 선언하도록 설정
+* Spring 은 메소드나 클래스에 **@Transactional** 이 선언되어 있으면, AOP 를 통해 트랜잭션 처리
+
+#### 트랜잭션 관리자 설정
+```xml
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<property name="dataSource" ref="ds"/>
+</bean>
+```
+
+#### Annotation 기반 트랜잭션 설정
+```xml
+<tx:annotation-driven />
+<!-- or -->
+<tx:annotation-driven transaction-manager="transactionManager"/>
+```
+
+### SqlSessionFactoryBean 설정
+* MyBatis 애플리케이션은 SqlSessionFactory 중심으로 수행
+* Spring 에서 SqlSessionFactory 객체를 생성하기 위해서는 SqlSessionFactoryBean 을 Bean 으로 등록해야 함
+	* 사용할 DataSource 와 MyBatis 설정파일 정보가 필요
+
+#### 직접 설정
+```xml
+<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+	<property name="dataSource" ref="ds"></property>
+	<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+	<property name="mapperLocations">
+		<list>
+			<value>classpath:mapper/guestbook.xml</value>
+			<value>classpath:mapper/member.xml</value>
+		</list>
+	</property>
+</bean>
+```
+
+#### MyBatis Config 파일을 사용하지 않고 자동 설정
+```xml
+<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	<property name="dataSource" ref="ds"/>
+	<property name="typeAliasesPackage" value="com.mvc.vo"/>
+	<property name="mapperLocations" value="classpath*:mapper/**/*.xml"></property>	
+</bean>
+```
+
+### Mapper Bean 등록
+* Mapper Interface 를 사용하기 위해 *Scanner 를 사용하여 자동으로 등록하거나, 직접 등록*
+* *mapperScannerConfigurer* 을 설정하면, Mapper Interface 를 자동으로 검색하여 Bean 으로 등록
+	* *basePackage* 로 패키지로 설정하면, 해당 패키지 하위의 모든 Mapper Interface 가 등록
+* *MapperFactoryBean class* 는 직접 등록할 때 사용
+
+#### Mapper Scanner 사용
+```xml
+<!-- MapperScannerConfigurer:java mapper를 해당 패키지에서 찾아서 proxy 객체를 생성한 후 ServiceImpl에 주입시킴 -->
+<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+	<property name="basePackage" value="com.mvc.mapper"/>
+</bean>
+```
+
+#### 직접 등록
+```xml
+<bean id="authorMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+	<property name="mapperInterface" value="com.mvc.mapper.AuthorMapper" />
+	<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+</bean>
+```
+
+### MyBatis Configuration 설정
+* Spring 을 사용하면 DB 접속정보 및 Mapper 관련 설정은 Spring Bean 으로 등록하여 관리
+* MyBatis 환경설정 파일에는 Spring 에서 관리하지 않는 일부 정보만 설정
+	* typeAlias, typeHandler 등
 
 ```xml
-<aop:config>
-	<aop:aspect id="afterAspect" ref="historyAdvice">
-		<aop:pointcut id="publicMethod" expression="execution(public * com.test.spring.aop..*Controller.*(..))"/>
-		<!-- 메소드가 정상적으로 결과값을 리턴했을 경우 -->
-		<aop:after-returning method="history" pointcut-ref="publicMethod" returning="ret"/>
-	</aop:aspect>
-</aop:config>
-```
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
 
-```java
-public void history(JoinPoint joinPoint, Object ret) throws Throwable {
-	System.out.println("HistoryAdvice : " + ret);
-}
-```
-
-1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드를 호출
-2. AOP 프록시는 실제 Bean 객체의 메소드를 호출 (정상 실행)
-3. AOP 프록시는 \<aop:after-returning> 에서 지정한 메소드를 호출
-
-#### After Advice
-* **대상 객체의 메소드가 정상적으로 실행 되었는지 아니면 exception 을 발생 시켰는지의 여부와 상관 없이 메소드 실행 종료 후 공통 기능 적용**
-* **return type** : *void*
-* **parameter** : 없거나 ***JoinPoint***
-
-1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드 호출
-2. AOP 프록시는 실제 Bean 객체의 메소드 호출(정상 실행, exception 발생 : java 의 finally 와 같음)
-3. AOP 프록시는 \<aop:after> 에서 지정한 메소드를 호출
-
-#### Around Advice
-* **위의 네가지 Advice 를 모두 구현하는 Advice**
-* **return type** : Object
-* **parameter** : ***org.aspectj.lang.ProceedingJoinPoint***
-
-1. Bean 객체를 사용하는 코드에서 스프링이 생성한 AOP 프록시의 메소드 호출
-2. AOP 프록시는 \<aop:around> 에서 지정한 메소드 호출
-3. AOP 프록시는 실제 Bean 객체의 메소드 호출
-4. AOP 프록시는 \<aop:around> 에서 지정한 메소드 호출
-
-#### JoinPoint Class 구성 요소
-* 대상 객체에 대한 정보를 가지고 있는 객체로 Spring Container 로부터 받는다
-* *org.aspectj.lang*
-* 반드시 Aspect method 의 첫번째 인자로 와야한다
-
-|주요 Method|설명|
-|-----------|----|
-|**Object getTarget()**|대상 객체를 리턴|
-|**Object[] getArgs()**|파라미터로 넘겨진 값들을 배열로 리턴 (없으면 빈 배열)|
-|**Signature getSignature()**|호출되는 메소드의 정보 (Signature: 호출되는 메소드의 정보를 가진 객체)|
-|**String getName()**|메소드 이름|
-|**String toLongString()**|메소드 전체 syntax 를 리턴|
-|**String toShortString()**|메소드를 축약해서 리턴 (기본은 메소드 이름)|
-
-## Spring API 이용
-
-## Annotation 이용
-### @Aspect 를 이용하여 Aspect Class 에 직접 Advice 및 Pointcut 설정
-* @Aspect : Aspect Class 선언
-* @Before("pointcut")
-* @AfterReturning(pointcut="", returning="")
-* @AfterThrowing(pointcut="", throwing="")
-* @After("pointcut")
-* @Around("pointcut")
-<br/>
-
-* *Around* 를 제외한 나머지 메소드는 첫 인자로 ***JoinPoint*** 를 가질 수 있음
-* *Around* 는 ***ProceedingJoinPoint*** 를 인자로 가질 수 있음
-
-```java
-@Aspect
-public class PerformanceTraceAdvice() {
+<configuration>
 	
-	@Pointcut("execution(public * com.test.spring.aop..*Controller.*(..))")
-	public void profileTarget() {}
+	<typeAliases>
+		<typeAlias type="com.ssafy.guestbook.model.MemberDto" alias="member"/>
+		<typeAlias type="com.ssafy.guestbook.model.GuestBookDto" alias="guestbook"/>
+		<typeAlias type="com.ssafy.guestbook.model.FileInfoDto" alias="fileinfo"/>
+	</typeAliases>
 	
-	@Around("profileTarget()")
-	public Object trace(ProceedingJoinPoint joinPoint) throws Throwable {
-		String signature = joinPoint.getSignature().toShortString();
-		long start = System.currentTimeMillis();
-		try {
-			Object result = joinPoint.proceed();
-			return result;
-		} finally {
-			long finish = System.currentTimeMillis();
-			System.out.println("PerformanceTraceAdvice : " + signature + " 실행시간 - " + (finish - start) + "ms");
-		}
-	}
-}
+</configuration>
 ```
-### 설정파일에 \<aop:aspectj-autoproxy/> 추가
-### Aspect Class 를 \<bean> 으로 등록
 
-```xml
-<context:component-scan base-package="com.test.aop" />
-	
-<aop:aspectj-autoproxy />
-```
+### 데이터 접근 객체 구현
+* 데이터 접근 객체는 특정한 기술을 사용하여 데이터 저장소에 접근하는 방식을 구현한 객체
+* **@Repository** 는 데이터 접근 객체를 Bean 에 등록하기 위해 사용하는 Spring 에서 제공하는 Annotation
+* **@Autowired** 를 통해, 사용하려는 Mapper Interface 를 데이터 접근 객체와 의존관계를 설정
