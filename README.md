@@ -43,3 +43,4 @@
 ### [Spring Web MVC](https://github.com/ljiwoo59/Back_Study/tree/main/Spring/MVC)
 ### [AOP](https://github.com/ljiwoo59/Back_Study/tree/main/Spring/AOP)
 ### [MyBatis](https://github.com/ljiwoo59/Back_Study/tree/main/Spring/MyBatis)
+### [REST API](https://github.com/ljiwoo59/Back_Study/tree/main/Spring/REST)
