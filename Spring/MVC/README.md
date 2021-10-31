@@ -483,3 +483,43 @@ public class BoardViewController {
 	* 첫번째 *Spring Container* 가 구동되며 생성된 **DAO, VO, Service class** 들과 협업하여 알맞은 작업 처리 
 
 
+---
+
+# Interceptor
+* **HandlerInterceptor** 을 통한 요청 가로채기
+	* *Controller* 가 요청을 처리하기 전/후 처리
+	* 로깅, 모니터링 정보 수집, 접근 제어 처리 등의 Business Logic 과는 분리되어 치리해야하는 기능을 넣을 때 유용
+	* **HandlerInterceptior** 인터페이스를 상속받는 클래스 구현
+	* **servlet-context.xml** 에 등록
+		* 여러개 설정 가능 (순서 주의)
+		* *\<mapping path="Interceptor 가 실행될 controller"/>*
+		* *\<bean class="Interceptor"/> or \<beans:ref bean="Inteceptor beanId"/>*
+
+## HandlerInterceptio method
+* **boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)**
+	* *False* 를 반환하면 request 를 바로 종료
+* **void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView)**
+	* *Controller* 수행 후 호출
+* **void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)**
+	* *View* 를 통해 클라이언트에 응답을 전송한 뒤 실행
+	* 예외가 발생하여도 실행 
+
+## 호출 순서
+![image](https://user-images.githubusercontent.com/54715744/139573709-8b3de858-7ab0-4ef8-b0e9-e4be15b0c1e5.png)
+
+```xml
+<mvc:interceptors>
+	<mvc:interceptor>
+		<mvc:mapping path="/*.html"/>
+		<bean class="com.test.hello.AInterceptor"/>
+	</mvc:interceptor>
+	<mvc:interceptor>
+		<mvc:mapping path="/*.html"/>
+		<bean class="com.test.hello.BInterceptor"/>
+	</mvc:interceptor>
+	<mvc:interceptor>
+		<mvc:mapping path="/*.html"/>
+		<bean class="com.test.hello.CInterceptor"/>
+	</mvc:interceptor>
+</mvc:interceptors>
+```
