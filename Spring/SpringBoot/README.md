@@ -98,7 +98,7 @@ logging.level.com.ssafy.guestbook=debug
 </dependency>
 ```
 
-## *SwaggerConfiguration.java*
+### *SwaggerConfiguration.java*
 
 ```java
 @Configuration
@@ -156,7 +156,7 @@ public class SwaggerConfiguration {
 }
 ```
 
-## Swagger 가 적용 될 *Controller*
+### Swagger 가 적용 될 *Controller*
 ```java
 @CrossOrigin(origins = { "*" }, maxAge = 6000)
 @RestController
