@@ -1,323 +1,230 @@
-# REST API
+# SpringBoot
+* *Spring* 의 경우, Application 을 개발하려면 사전에 많은 작업 필요
+	* Library 추가, dependency 설정, Spring Framework 가 처리해야 하는 여러 가지 구성 및 설정파일 등)
+* **SpringBoot** 의 장점
+	* Project 에 따라 자주 사용되는 *Library* 가 미리 조합되어 있음
+	* 복잡한 설정을 자동으로 처리
+	* 내장 서버를 포함해서 tomcat 과 같은 *WAS* 를 추가로 설치하지 않아도 개발 가능
+	* WAS 에 배포하지 않고도 실행할 수 있는 *JAR* 파일로 Web Application 개발 가능
 
-#### OPEN API (Application Programming Interface)
-* 프로그래밍에서 사용할 수 있는 개방되어 있는 상태의 Interface
-* 대부분의 OPEN API 는 *REST 방식으로 지원*
+## SpringBoot Project 생성
+* *Spring Starter Project* 를 이용하여 윈도우의 Install Wizard 와 같이 프로젝트 생성 가능
+	* 버전 및 dependency 설정 가능
 
-## REST (Representational State Transfer)
-* 하나의 URI 는 하나의 고유한 Resource 를 대표하도록 설계된다는 개념에 전송방식을 결합해 원하는 작업을 지정
-	* URI + *GET|POST|PUT|DELETE*
-* 웹의 장점을 최대한 활용할 수 있는 아키텍처
-* HTTP URI 를 통해 제어할 Resource 를 명시하고, HTTP Method(GET, POST, PUT, DELETE) 를 통해 해당 Resource 를 제어하는 명령을 내리는 방식의 아키텍처
+* **주요 구성 폴더/파일**
+	* **src/main/java** : java source directory
+	* **Application.java** : application 을 시작할 수 있는 main method 가 존재하는 스프링 구성 메인 클래스
+	* **static** : css, js, img 등의 정적 resource directory
+	* **templates** : SpringBoot 에서 사용 가능한 여러가지  View Template(Thymeleaf, Velocity, FreeMaker 등) 위치
+	* **application.properties** : application 및 스프링의 설정 등에서 사용할 여러가지 property 를 정의한 file
+	* **src/main** : jsp 등의 resource directory
 
-## 구성
-* **자원 (Resource) - URI**
-* **행위 (Verb) - HTTP Method**
-* **표현 (Representations)**
-<br/>
+## application.properties
+```properties
+# server setting
+## context path 설정
+server.servlet.context-path=/hello
 
-* 잘 표현된 HTTP URI 로 Resource 를 정의하고 HTTP Method 로 Resource 에 대한 행위를 정의
-* Resource 는 JSON, XML 과 같은 여러가지 언어로 표현할 수 있다
+## server port 설정
+server.port=8000
 
-## 기존 Service 와 REST Service
-### 기존 Service
-* 요청에 대한 처리를 한 후 가공된 data 를 이용하여 ***특정 플랫폼에 적합한 형태의 View*** 로 만들어서 반환
 
-### REST Service
-* data 처리만 한다거나, 처리 후 반환될 data 가 있다면 ***JSON 이나 XML 형식***으로 전달
-* View 에 대해서는 신경 쓸 필요가 없다
-<br/>
+# jsp setting (SpringBoot 는 jsp 를 지원하지 않으므로 dependency(pom.xml) 에 jsp 설정을 추가해야함
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
 
-* 기존의 전송방식과는 달리 서버는 요청으로 받은 리소스에 대해 *순수한 데이터를 전송*
-* 기존은 *GET/POST* 외에, *PUT/DELETE* 방식을 사용하여 리소스에 대한 CRUD 처리 가능
-* 정해진 표준이 없어 암묵적인 표준만 있다
-	* "-" 는 사용 가능하나 "\_" 는 사용하지 않음
-	* 특별한 경우를 제외하고 대문자 사용은 하지 않음 (대소문자를 구분한다)
-	* URI 마지막에 "/" 를 사용하지 않음
-	* "/" 로 계층 관계를 나타냄
-	* 확장자가 포함된 파일 이름을 직접 포함시키지 않음
-	* URI 는 명사를 이용
+# DataBase Setting
+# spring.datasource.hikari.maximum-pool-size=4
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://localhost:3306/ssafyweb?serverTimezone=UTC&useUniCode=yes&characterEncoding=UTF-8
+spring.datasource.username=ssafy
+spring.datasource.password=ssafy
 
-### 웹 접근 방식
-|작업|기존 방식|REST 방식|ex|
-|----|---------|---------|--|
-|**Create**(Insert)|**POST**  /write.do?id=troment|**POST**  /blog/troment|글쓰기|
-|**Read**(Select)|**GET**  /view.do?id=troment&articleno=25|**GET**  /blog/troment/25|글읽기|
-|**Update**(Update)|**POST**  /modify.do?id=troment|**PUT**  /blog/troment|글수정|
-|**Delete**(Delete)|**GET**  /delete.do?id=troment&articleno=25|**DELETE**  /blog/troment/25|글삭제|
+# MyBatis Setting
+mybatis.type-aliases-package=com.ssafy.guestbook.vo
+mybatis.mapper-locations=mapper/**/*.xml
 
-* 기존의 블로그 등은 GET 과 POST 만으로 자원에 대한 CRUD 를 처리하며, URI 는 액션을 나타냄
-* REST 로 변경할 경우 4가지 method 를 모두 사용하여 CRUD 를 처리하며, URI 는 제어하려는 자원을 나타냄
+# File Upload size Setting
+spring.servlet.multipart.max-file-size=5MB
+spring.servlet.multipart.max-request-size=5MB
 
-## REST API 설정
-### Jackson Library
-* ***jackson-databing*** 라이브러리는 ***객체를 JSON 포맷의 문자열로 변환시켜 브라우저로 전송***
-* ***jackson-dataformat-xml*** 라이브러리는 ***객체를 xml 로 브라우저로 전송***
-* *pom.xml* 에 library 추가
+# server restart
+spring.devtools.restart.additional-paths=.
 
-### Annotation
-* **@RestController**
-	* Controller 가 REST 방식을 처리하기 위한 것임을 명시
-* **@ResponseBody**
-	* JSP 같은 View 로 전달되는 것이 아니라 데이터 자체를 전달
-* **@PathVariable**
-	* URL 경로에 있는 값을 파라미터로 추출
-* **@CrossOrigin**
-	* Ajax 의 크로스 도메인 문제를 해결
-* **@RequestBody**
-	* JSON 데이터를 원하는 타입으로 바인딩
-
-## index.jsp
-```jsp
-<script type="text/javascript">
-	$(document).ready(function(){
-		customerList(); // 서버로부터 모든 고객 정보 받아오는 함수
-		
-		customerSelect(); // 한사람 선택시 정보 받아올 이벤트 등록
-		customerDelete(); // 삭제버튼 클릭시 이벤트 등록
-		customerUpdate(); // 수정버튼 클릭시 이벤트 등록
-		customerInsert(); // 추가버튼 클릭시 이벤트 등록
-		customerSearch();
-		customerAll();
-		init(); // 입력칸 지우는 이벤트 등록
-	});
-	
-	function customerList(){
-		// 서버로 ajax 요청 보내서 데이터 받아오기
-		$.ajax({
-			url: 'http://localhost:8080/rest/customers',
-			type: 'get',
-			dataType: 'json', // 서버가 보내주는 데이터 타입
-			success: function(result){
-				customerListResult(result);
-			},
-			error: function(xhr, status, msg){
-				alert("상태값: " + status + " 에러메시지: " + msg);
-			}
-		});
-	}
-	
-	function customerSelect(){
-		// tr 클릭시 선택정보가 위쪽의 text칸에 들어가도록 처리
-		$('body').on('click', 'tr', function(){
-			var num = $(this).find('#hidden_num').val();
-			$.ajax({
-				url: 'customers/' + num,
-				type: 'get',
-				dataType: 'json',
-				success: customerSelectResult
-			})
-		})
-	}
-	function customerDelete(){
-		$('#btnDelete').on('click', function(){
-			var num = $('#num').val();
-			if (num != "") {
-				$.ajax({
-					url: 'customers/' + num,
-					type: 'delete',
-					dataType: 'json',
-					success: function() {
-						clear();
-						customerList(); // 화면 리프레쉬
-					}
-				})
-			} else {
-				alert("삭제할 정보를 입력해 주세요!");
-			}
-		})
-	}
-	
-	function customerUpdate(){
-		$('#btnUpdate').on('click', function() {
-			var num = $('#num').val();
-			var address = $('#address').val();
-	
-			if (num != "" && address != "") {
-				$.ajax({
-					url: 'customers',
-					type: 'put',
-					data: JSON.stringify({ // json 객체를 문자열 형식으로
-						num: num,
-						address: address
-					}),
-					contentType: 'application/json', // 서버로 보내는 데이터 형식
-					success: function() {
-						clear();
-						customerList();
-					}
-				})
-			} else {
-				alert("수정할 정보를 입력해 주세요!");
-			}
-		})
-	}
-	
-	function customerInsert(){
-		$('#btnInsert').on('click', function() {
-			// 1. 입력값 알아오기
-			var num = $('#num').val();
-			var name = $('#name').val();
-			var address = $('#address').val();
-			
-			if (num != "" && name != "" && address !="") {
-			// 2. ajax 요청
-				$.ajax({
-					url: 'customers',
-					type: 'post',
-					data: JSON.stringify({ // json 객체를 문자열 형식으로
-						num: num,
-						name: name,
-						address: address
-					}),
-					contentType: 'application/json', // 서버로 보내는 데이터 형식
-					success: function() {
-						clear();
-						customerList();
-					}
-				})
-			} else {
-				alert("추가할 정보를 입력해 주세요!");
-			}
-		})
-	}
-	
-	function customerSearch(){
-		$('#btnSearch').on('click', function() {
-			var address = $('#address').val();
-			
-			if (address != "") {
-				$.ajax({
-					url: 'customers/find/' + address,
-					type: 'get',
-					dataType: 'json',
-					success: function(result) {
-						clear();
-						customerListResult(result);
-					}
-				})
-			} else {
-				alert("검색할 정보를 입력해 주세요!")
-			}
-		})
-	}
-	
-	function customerAll(){
-		$('#btnAll').on('click', function() {
-			$.ajax({
-				url: 'http://localhost:8080/rest/customers',
-				type: 'get',
-				dataType: 'json', // 서버가 보내주는 데이터 타입
-				success: function(result){
-					customerListResult(result);
-				},
-				error: function(xhr, status, msg){
-					alert("상태값: " + status + " 에러메시지: " + msg);
-				}
-			});
-		})
-	}
-	
-	function init(){
-		$('#btnInit').click(function(){
-			$('#num').val('');
-			$('#name').val('');
-			$('#address').val('');
-		})
-	}
-	
-	// 서버에서 받은 결과를 테이블에 넣어 보여주는 함수
-	function customerListResult(result) {
-		$('tbody').empty();
-		$.each(result, function(index, item){
-			// $('<tr>') : tr 태그를 하나 생성 <tr><td>num</td><td>name</td><td>address</td></tr>
-			$('<tr>')
-			.append($('<td>').text(item.num))
-			.append($('<td>').text(item.name))
-			.append($('<td>').text(item.address))
-			.append($('<input type="hidden" id="hidden_num">').val(item.num))
-			.appendTo('tbody');
-		})
-		
-	}
-	
-	function customerSelectResult(result) {
-		$('#num').val(result.num);
-		$('#name').val(result.name);
-		$('#address').val(result.address);
-	}
-	
-	function clear(){
-		$('#num').val('');
-		$('#name').val('');
-		$('#address').val('');
-	
-	}
-</script>
+# log level Setting
+logging.level.root=info
+logging.level.com.ssafy.guestbook=debug
+# logging.level.com.rest.mapper=trace
 ```
 
-## RestController
+### jsp 설정 (pom.xml)
+```xml
+<!-- jsp 설정 -->
+<dependency>
+	<groupId>javax.servlet</groupId>
+	<artifactId>jstl</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.apache.tomcat.embed</groupId>
+	<artifactId>tomcat-embed-jasper</artifactId>
+</dependency>
+```
+
+---
+
+# Swagger
+* **Swagger 를 이용한 REST API 문서화**
+	* BackEnd 개발자가 만든 문서 API 를 보며 FrontEnd 개발자가 데이터 처리를 할 수 있도록 사용
+* **간단한 설정으로 프로젝트의 API 목록을 웹에서 확인 및 테스트 할 수 있게 해주는 Library**
+	* *Controller* 에 정의되어 있는 모든 URL 을 바로 확인 가능
+	* *API 목록 뿐만 아니라 API 명세 및 설명*을 볼 수 있으며, 테스트 가능
+
+## Swagger 적용
+### *pom.xml* 에 swagger2 dependency 추가
+
+```xml
+<!-- Swagger Setting -->
+<!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-swagger2</artifactId>
+    <version>2.9.2</version>
+</dependency>		
+<!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-swagger-ui</artifactId>
+    <version>2.9.2</version>
+</dependency>
+```
+
+## *SwaggerConfiguration.java*
+
 ```java
-//@RestController: @Controller + @ResponseBody (java->json 으로 변환해줌)
-//@CrossOrigin: 다른 origin 에서 요청이 와도 서비스 해주겠다
-//@CrossOrigin(origins = {"http://127.0.0.1:8080", "http://127.0.0.1:9090"})
-@CrossOrigin("*")
+@Configuration
+@EnableSwagger2
+public class SwaggerConfiguration {
+
+//	Swagger 설정 확인
+//	http://localhost:9999/{your-app-root}/v2/api-docs
+//	Swagger-UI 확인
+//	http://localhost:9999/{your-app-root}/swagger-ui.html
+
+	private String version = "V1";
+	private String title = "SSAFY WordCloud API " + version;
+	
+	@Bean
+	public Docket api() {
+		List<ResponseMessage> responseMessages = new ArrayList<ResponseMessage>();
+		responseMessages.add(new ResponseMessageBuilder().code(200).message("OK !!!").build());
+		responseMessages.add(new ResponseMessageBuilder().code(500).message("서버 문제 발생 !!!").responseModel(new ModelRef("Error")).build());
+		responseMessages.add(new ResponseMessageBuilder().code(404).message("페이지를 찾을 수 없습니다 !!!").build());
+		return new Docket(DocumentationType.SWAGGER_2).consumes(getConsumeContentTypes()).produces(getProduceContentTypes())
+					.apiInfo(apiInfo()).groupName(version).select()
+					.apis(RequestHandlerSelectors.basePackage("com.ssafy.word.controller"))
+					.paths(postPaths()).build()
+					.useDefaultResponseMessages(false)
+					.globalResponseMessage(RequestMethod.GET,responseMessages);
+	}
+	
+	private Set<String> getConsumeContentTypes() {
+        Set<String> consumes = new HashSet<>();
+        consumes.add("application/json;charset=UTF-8");
+        consumes.add("application/x-www-form-urlencoded");
+        return consumes;
+    }
+
+    private Set<String> getProduceContentTypes() {
+        Set<String> produces = new HashSet<>();
+        produces.add("application/json;charset=UTF-8");
+        return produces;
+    }
+	
+	private Predicate<String> postPaths() {
+		return regex("/word/.*");
+	}
+
+	private ApiInfo apiInfo() {
+		return new ApiInfoBuilder().title(title)
+				.description("<h3>SSAFY API Reference for Developers</h3>Swagger를 이용한 WordCloud API<br><img src=\"img/ssafy_logo.png\" width=\"150\">") 
+				.contact(new Contact("SSAFY", "https://edu.ssafy.com", "ssafy@ssafy.com"))
+				.license("SSAFY License")
+				.licenseUrl("https://www.ssafy.com/ksp/jsp/swp/etc/swpPrivacy.jsp")
+				.version("1.0").build();
+
+	}
+}
+```
+
+## Swagger 가 적용 될 *Controller*
+```java
+@CrossOrigin(origins = { "*" }, maxAge = 6000)
 @RestController
-public class CustomerRestController {
+@RequestMapping("/word")
+@Api("Word Cloud Controller API")
+public class WordCloudController {
+
+	private static final Logger logger = LoggerFactory.getLogger(WordCloudController.class);
 	
 	@Autowired
-	CustomerService service;
+	private WordService wordService;
 	
-	//Get:http://localhost:8080/rest/customers,  모든데이터
-	@GetMapping(value="/customers")
-	public List<Customer> selectAll(){		
-		return service.selectAll();
+	@ApiOperation(value = "관심단어 목록", notes = "회원들의 <b>관심단어의 목록</b>을 리턴합니다.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "성공!!!"),
+		@ApiResponse(code = 404, message = "Page Not Found!!!"),
+		@ApiResponse(code = 500, message = "Server Error!!!")
+	})
+	@GetMapping("/")
+	public ResponseEntity<List<WordDto>> listWord() {
+		logger.debug("listWord - 호출");
+		return new ResponseEntity<>(wordService.listWord(), HttpStatus.OK);
 	}
 	
-	
-	//get:http://localhost:8080/rest/customers/1 ,  한개 데이터	
-	@GetMapping(value="/customers/{num}")
-	public Customer selectOne(@PathVariable String num) {
-		return service.selectOne(num);
+	@ApiOperation(value = "관심단어 등록", notes = "회원들의 <b>관심단어</b>를 등록합니다.")
+	@PostMapping("/")
+	public ResponseEntity<List<WordDto>> registWord(@RequestParam(value = "concerns[]") List<String> concerns) {
+		logger.debug("registWord - 호출");
+		wordService.registWord(concerns);
+		return new ResponseEntity<>(wordService.listWord(), HttpStatus.OK);
 	}
 	
-	
-	//post:http://localhost:8080/rest/customers ,  데이터 추가	
-	@PostMapping(value="/customers")
-	public Map<String, String> insert(@RequestBody Customer c) { //@RequestBody: json -> java
-		service.insert(c);
-		
-		Map<String, String> map = new HashMap<>();
-		map.put("result", "추가 성공!");
-		return map;
+	@ApiOperation(value = "관심단어 수정", notes = "회원들의 <b>관심단어</b>를 수정합니다.")
+	@PostMapping("{word}")
+	public ResponseEntity<List<WordDto>> updateWordCount(@PathVariable("word") String word) {
+		logger.debug("updateWordCount - 호출");
+		wordService.updateCount(word);
+		return new ResponseEntity<>(wordService.listWord(), HttpStatus.OK);
 	}
 	
-	//put:http://localhost:8080/rest/customers ,  데이터 수정	
-	@PutMapping(value="/customers")
-	public Map<String, String> update(@RequestBody Customer c) { //@RequestBody: json -> java
-		service.update(c);
-		
-		Map<String, String> map = new HashMap<>();
-		map.put("result", "수정 성공!");
-		return map;
+}
+```
+
+### Swagger 가 적용 될 *Model(Dto)*
+```java
+@ApiModel(value = "WordDto : 관심단어", description = "관심단어와 비중을 가진 domain class 입니다.")
+public class WordDto {
+
+	@ApiModelProperty(value = "관심단어")
+	private String text;
+	@ApiModelProperty(value = "비중")
+	private double weight;
+
+	public String getText() {
+		return text;
 	}
-	
-	//delete:http://localhost:8080/rest/customers/1 ,  한개 데이터 삭제
-	@DeleteMapping(value="customers/{num}")
-	public Map<String, String> delete(@PathVariable String num) {
-		service.delete(num);
-		
-		Map<String, String> map = new HashMap<>();
-		map.put("result", "삭제 성공!");
-		return map;
+
+	public void setText(String text) {
+		this.text = text;
 	}
-	
-	//get:http://localhost:8080/rest/customers/find/la, 검색
-	@GetMapping(value="/customers/find/{address}")
-	public List<Customer> search(@PathVariable String address) {
-		return service.findByAddress(address);
+
+	public double getWeight() {
+		return weight;
 	}
-	
+
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
 
 }
 ```
